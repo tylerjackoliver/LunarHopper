@@ -587,6 +587,7 @@ void ACS() {
  * Blips the OX to warm up the catalyst bed
  * As yet unverified.
  * Update (7/6/15): It was found that the code for blipping works when simulated with an LED but does not work for an actual solenoid valve. Modify/change as necessary.
+ * Update (28/10/16): The above has been fixed but not verified.
 */
 void ox_pulse() {
   if (oxBlipCommand == true && pressStatus == 1) {
