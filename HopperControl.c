@@ -607,6 +607,9 @@ void ox_pulse() {
     }
   }
 }
+
+/* 29/10/16, Jack Tyler: There seems to be ox_pulse() and ox_Pulse() -- the one below seems to be the main functioin, but this needs to be verified. */
+
 void ox_Pulse() {
   PTVoltage = analogRead(PT); // Read the voltage from the pressure transducer
   currentPressure = ((PTVoltage / 1023 * 39) + 1)  ; // Calculate pressure in system in bar (abs)
