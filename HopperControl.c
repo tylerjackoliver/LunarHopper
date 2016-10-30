@@ -9,10 +9,10 @@ int gyroPin_y = A5; //y-axis gyro
 int xpin = A1;
 int ypin = A2;
 int zpin = A3;
-int ledPin1 = 6;//ACS valve right x_axis
-int ledPin2 = 5;//ACS valve left x_axis
-int ledPin3 = 3;//ACS valve left y_axis
-int ledPin4 = 4;//ACS valve right y_axis
+int ACSXRight = 6;//ACS valve right x_axis
+int ACSXLeft = 5;//ACS valve left x_axis
+int ACSYLeft = 3;//ACS valve left y_axis
+int ACSYRight = 4;//ACS valve right y_axis
 const int vent = 12; //Output to VENT solenoid control (SV2)
 const int pressure = 10; //Output to PRESSURE solenoid control (SV1)
 const int ox = 11; //Output to OX solenoid control(SV3)
@@ -180,17 +180,17 @@ void setup() {
   pinMode(PT, INPUT); //Define Pressure Transducer reading as an INPUT
   pinMode(gyroPin_x, INPUT);//reads gyro input
   pinMode(gyroPin_y, INPUT);
-  pinMode(ledPin1, OUTPUT);
-  pinMode(ledPin2, OUTPUT);
-  pinMode(ledPin3, OUTPUT);
-  pinMode(ledPin4, OUTPUT);
+  pinMode(ACSXRight, OUTPUT);
+  pinMode(ACSXLeft, OUTPUT);
+  pinMode(ACSYLeft, OUTPUT);
+  pinMode(ACSYRight, OUTPUT);
   pinMode(vent, OUTPUT); //Define signal to Vent control as an OUTPUT
   pinMode(pressure, OUTPUT); //Define signal to Pressure control as an OUTPUT
   pinMode(ox, OUTPUT); //Define signal to OX control as an OUTPUT
   pinMode(startPin, INPUT);
   pinMode(mecoPin, INPUT);
   pinMode(throttlePin, INPUT);
-  pinMode(7, OUTPUT);
+  pinMode(7, OUTPUT); // These need to be redefined, what do they do???
   pinMode(8, OUTPUT);
   pinMode(9, OUTPUT);
   pinMode(24, OUTPUT);
@@ -302,10 +302,10 @@ void disarm() {
   digitalWrite(pressure, LOW); // Close the PRESSURE solenoid
   digitalWrite(ox, LOW); // Close the OX solenoid
   digitalWrite(vent, LOW); // Open the VENT solenoid
-  digitalWrite(ledPin1, LOW);
-  digitalWrite(ledPin2, LOW);
-  digitalWrite(ledPin3, LOW);
-  digitalWrite(ledPin4, LOW);
+  digitalWrite(ACSXRight, LOW);
+  digitalWrite(ACSXLeft, LOW);
+  digitalWrite(ACSYLeft, LOW);
+  digitalWrite(ACSYRight, LOW);
   if (mecoCommand == true) { // If MECO has been activated
     mecoStatus = 1; // Record mecoStatus as ON
   } else { // If MECO is inactive
@@ -351,10 +351,10 @@ void meco_high() {
   digitalWrite(pressure, LOW); // Close the PRESSURE solenoid
   digitalWrite(vent, HIGH); // Open the VENT solenoid
   //Open ACT valves to vent ACS system:
-  digitalWrite(ledPin1, HIGH);
-  digitalWrite(ledPin2, HIGH);
-  digitalWrite(ledPin3, HIGH);
-  digitalWrite(ledPin4, HIGH);
+  digitalWrite(ACSXRight, HIGH);
+  digitalWrite(ACSXLeft, HIGH);
+  digitalWrite(ACSYLeft, HIGH);
+  digitalWrite(ACSYRight, HIGH);
 
   if (!wasMECO)
   {
@@ -426,34 +426,34 @@ void ACS_check() {
     int i;
     ACSstatus = 2; //set acs status to testing
     for (i = 0; i < 1; i++) { //run just once
-      digitalWrite(ledPin1, HIGH);
-      digitalWrite(ledPin2, HIGH);
+      digitalWrite(ACSXRight, HIGH);
+      digitalWrite(ACSXLeft, HIGH);
       delay(15);
-      digitalWrite(ledPin1, LOW);
-      digitalWrite(ledPin2, LOW);
-      digitalWrite(ledPin3, HIGH);
-      digitalWrite(ledPin4, HIGH);
+      digitalWrite(ACSXRight, LOW);
+      digitalWrite(ACSXLeft, LOW);
+      digitalWrite(ACSYLeft, HIGH);
+      digitalWrite(ACSYRight, HIGH);
       delay(15);
-      digitalWrite(ledPin3, LOW);
-      digitalWrite(ledPin4, LOW);
+      digitalWrite(ACSYLeft, LOW);
+      digitalWrite(ACSYRight, LOW);
     }
     ACTtestcommand = false;
   }
   else if (ACTventcommand == true) { //when ACTventcommand signal is high
     ACTventstatus = 1; //set ACTventstatus to on and open all valves
-    digitalWrite(ledPin1, HIGH);
-    digitalWrite(ledPin2, HIGH);
-    digitalWrite(ledPin3, HIGH);
-    digitalWrite(ledPin4, HIGH);
+    digitalWrite(ACSXRight, HIGH);
+    digitalWrite(ACSXLeft, HIGH);
+    digitalWrite(ACSYLeft, HIGH);
+    digitalWrite(ACSYRight, HIGH);
   }
 
   else {
     ACSstatus = 0;//otherwise set ACSstatus and ACTventstatus to off and close all solenoid valves
     ACTventstatus = 0;
-    digitalWrite(ledPin1, LOW);
-    digitalWrite(ledPin2, LOW);
-    digitalWrite(ledPin3, LOW);
-    digitalWrite(ledPin4, LOW);
+    digitalWrite(ACSXRight, LOW);
+    digitalWrite(ACSXLeft, LOW);
+    digitalWrite(ACSYLeft, LOW);
+    digitalWrite(ACSYRight, LOW);
     ACSActive = false;//restart calibration process in next run
 
   }
@@ -528,37 +528,37 @@ void ACS() {
     if (abs(currentangle_x + a * xRate) < maxAngle) {
       if (abs(currentangle_x + a * xRate) >= k) {
         if (currentangle_x + a * xRate > 0) {    //control law
-          digitalWrite(ledPin1, HIGH);            // open nozzle  LED1 on
-          digitalWrite(ledPin2, LOW);             //close nozzle  LED2 off
+          digitalWrite(ACSXRight, HIGH);            // open nozzle  LED1 on
+          digitalWrite(ACSXLeft, LOW);             //close nozzle  LED2 off
 
 
         }
         else if (currentangle_x + a * xRate < 0) {
           //Serial.println(currentangle+a*gyroRate);
-          digitalWrite(ledPin2, HIGH);            // open nozzle  LED2 on
-          digitalWrite(ledPin1, LOW);             //close nozzle  LED1 off
+          digitalWrite(ACSXLeft, HIGH);            // open nozzle  LED2 on
+          digitalWrite(ACSXRight, LOW);             //close nozzle  LED1 off
 
         }
         else {
-          digitalWrite(ledPin2, LOW);            // open nozzle  LED2 off
-          digitalWrite(ledPin1, LOW);             //close nozzle  LED1 off
+          digitalWrite(ACSXLeft, LOW);            // open nozzle  LED2 off
+          digitalWrite(ACSXRight, LOW);             //close nozzle  LED1 off
         }
       }
       else if (abs(currentangle_y + a * yRate) >= k) {
         if (currentangle_y + a * yRate > 0) {    //control law
-          digitalWrite(ledPin3, HIGH);            // open nozzle  LED3 on
-          digitalWrite(ledPin4, LOW);             //close nozzle  LED4 off
+          digitalWrite(ACSYLeft, HIGH);            // open nozzle  LED3 on
+          digitalWrite(ACSYRight, LOW);             //close nozzle  LED4 off
 
         }
         else if (currentangle_y + a * yRate < 0) {
 
-          digitalWrite(ledPin4, HIGH);            // open nozzle  LED4 on
-          digitalWrite(ledPin3, LOW);             //close nozzle  LED3 off
+          digitalWrite(ACSYRight, HIGH);            // open nozzle  LED4 on
+          digitalWrite(ACSYLeft, LOW);             //close nozzle  LED3 off
 
         }
         else {
-          digitalWrite(ledPin3, LOW);            // open nozzle  LED3 off
-          digitalWrite(ledPin4, LOW);             //close nozzle  LED4 off
+          digitalWrite(ACSYLeft, LOW);            // open nozzle  LED3 off
+          digitalWrite(ACSYRight, LOW);             //close nozzle  LED4 off
         }
       }
 
@@ -693,7 +693,7 @@ void Pressurisation() {
   Serial.print("current Pressure = ");
   Serial.print(currentPressure);
   Serial.println("");
-  
+
   if (ventCommand == true) { // If vent signal is high
     digitalWrite(vent, HIGH); // Open the VENT solenoid
     ventStatus = 1; // Record ventStatus as active
@@ -745,7 +745,7 @@ void throttle()
   Serial.print(throttlePressure);
   Serial.print(" current pressure = ");
   Serial.print(currentPressure);
-  
+
   if (currentPressure < ignitionPressure )
   {
     digitalWrite(pressure, HIGH);
@@ -771,9 +771,8 @@ void throttle()
     digitalWrite(ox, HIGH);
     digitalWrite(26, HIGH);
     Serial.print(" ig < throttle < current");
-    
+
   }
 
   Serial.println("");
 }
-
