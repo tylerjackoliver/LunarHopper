@@ -190,7 +190,7 @@ void setup() {
   pinMode(startPin, INPUT);
   pinMode(mecoPin, INPUT);
   pinMode(throttlePin, INPUT);
-  pinMode(7, OUTPUT);
+  pinMode(7, OUTPUT); // These need to be redefined, what do they do???
   pinMode(8, OUTPUT);
   pinMode(9, OUTPUT);
   pinMode(24, OUTPUT);
