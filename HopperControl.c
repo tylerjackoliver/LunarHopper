@@ -1,3 +1,15 @@
+/*-------------------------------
+
+Lunar Hopper Control System Code
+
+Written by: Marian Daogaru, mn2g12, Phase V GDP
+
+Refactored and updated by: Jack Tyler, jt6g15 & Duncan Hamill, dh2g15, SUSS Phase VI
+
+---------------------------------
+*/
+
+
 /*
  * PIN NUMBERS
  * Set pins for various input and output devices on arduino. e.g.- gyro, accelerometer,pressure transducer and solenoid valves.
@@ -176,7 +188,7 @@ float throttlePressure = 0;
 
 void setup() {
   Serial.begin(9600);
-  Serial.println("serial start");
+  Serial.println("Starting serial process...");
   pinMode(PT, INPUT); //Define Pressure Transducer reading as an INPUT
   pinMode(gyroPin_x, INPUT);//reads gyro input
   pinMode(gyroPin_y, INPUT);
@@ -192,7 +204,7 @@ void setup() {
   pinMode(throttlePin, INPUT);
   
   // Following pins for testing only
-  pinMode(7, OUTPUT);
+  /*pinMode(7, OUTPUT);
   pinMode(8, OUTPUT);
   pinMode(9, OUTPUT);
   pinMode(24, OUTPUT);
@@ -203,6 +215,7 @@ void setup() {
   Serial.println("before high");
   digitalWrite(24, HIGH);
   Serial.println("after high");
+  */
 }
 
 /*
@@ -237,34 +250,34 @@ void loop() {
           }
       }
     } */
-  Serial.print("in loop   ");
+  Serial.print("In loop:   ");
   Serial.println(TimeZG);
   if (mecoStatus == 0)
   {
-    Serial.println("meco = 0");
+    Serial.println("MECO status = 0");
     if (startStatus == 1)
     {
-      Serial.println("start = 1");
+      Serial.println("Start = 1");
       digitalWrite(24, LOW);
       if (ACSActive == false)
       {
-        Serial.println("acs check");
+        Serial.println("Performing ACS Check...");
         ACS_Check();
       }
       else if (Calibrated == false)
       {
-        Serial.println("calibrate");
+        Serial.println("Performing calibration...");
         ACS_Calibration();
       }
       else if (oxPulseNo < oxNoPulses)
       {
-        Serial.print("oxpulseno = ");
+        Serial.print("oxPulseNo = ");
         Serial.print(oxPulseNo);
         ox_Pulse();
       }
       else
       {
-        Serial.println("stuff in working");
+        Serial.println("Working...");
         ACS();
         throttle();
       }
@@ -273,10 +286,10 @@ void loop() {
     else
     {
       startStatus = digitalRead(startPin);
-      Serial.println("read start pin");
+      Serial.println("Reading start pin...");
     }
     mecoStatus = digitalRead(mecoPin);
-    Serial.print(" meco status = ");
+    Serial.print(" MECO status = ");
     Serial.println(mecoStatus);
   }
 
@@ -393,7 +406,7 @@ void ACS_Check()
     ACSActive = true;//indiicate acs is active
     TimeZG = millis();//start zeroing time
     ACS_Calibration();
-    Serial.print(" in check, Timezg = ");
+    Serial.print(" Checking, Timezg = ");
     Serial.println(TimeZG);
   }
 }
@@ -471,7 +484,7 @@ void ACS_Calibration() {
     xacc_voltage_sum += analogRead(xpin);
     yacc_voltage_sum += analogRead(ypin);
     acquisitions_count++; // Increment the counter
-    Serial.print("still calibrating at ");
+    Serial.print("Still calibrating at elapsed time: ");
     Serial.println(TimeZG + CalibrationTime-millis());
   } else {
     if (Calibrated == false) {  // If calibration time has just finished
@@ -694,7 +707,7 @@ void Pressurisation() {
   PTVoltage = analogRead(PT); // Read the voltage from the pressure transducer
   currentPressure = ((PTVoltage / 1023 * 39) + 1)  ; // Calculate pressure in system in bar (abs)
 
-  Serial.print("current Pressure = ");
+  Serial.print("Current pressure = ");
   Serial.print(currentPressure);
   Serial.println("");
 
@@ -745,9 +758,9 @@ void throttle()
   currentPressure = ((PTVoltage / 1023 * 39) + 1)  ; // Calculate pressure in system in bar (abs)
 
   throttlePressure = ((analogRead(throttlePin) / 1023 * 21 )) + 19;
-  Serial.print("throttle pressure = ");
+  Serial.print("Throttle pressure = ");
   Serial.print(throttlePressure);
-  Serial.print(" current pressure = ");
+  Serial.print(" Current pressure = ");
   Serial.print(currentPressure);
 
   if (currentPressure < ignitionPressure )
@@ -767,7 +780,7 @@ void throttle()
     digitalWrite(pressure, LOW);
     digitalWrite(ox, LOW);
     digitalWrite(26, LOW);
-    Serial.print(" throttle < ig< current");
+    Serial.print(" throttle < ig < current");
   }
   else if (throttlePressure < currentPressure && ignitionPressure < currentPressure && ignitionPressure < throttlePressure)
   {
