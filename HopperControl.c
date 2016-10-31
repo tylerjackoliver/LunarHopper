@@ -190,12 +190,16 @@ void setup() {
   pinMode(startPin, INPUT);
   pinMode(mecoPin, INPUT);
   pinMode(throttlePin, INPUT);
-  pinMode(7, OUTPUT); // These need to be redefined, what do they do???
+  
+  // Following pins for testing only
+  pinMode(7, OUTPUT);
   pinMode(8, OUTPUT);
   pinMode(9, OUTPUT);
   pinMode(24, OUTPUT);
   pinMode(28, OUTPUT);
   pinMode(26, OUTPUT);
+  
+  
   Serial.println("before high");
   digitalWrite(24, HIGH);
   Serial.println("after high");
