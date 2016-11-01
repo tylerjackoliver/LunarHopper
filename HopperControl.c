@@ -203,19 +203,6 @@ void setup() {
   pinMode(mecoPin, INPUT);
   pinMode(throttlePin, INPUT);
   
-  // Following pins for testing only
-  /*pinMode(7, OUTPUT);
-  pinMode(8, OUTPUT);
-  pinMode(9, OUTPUT);
-  pinMode(24, OUTPUT);
-  pinMode(28, OUTPUT);
-  pinMode(26, OUTPUT);
-  
-  
-  Serial.println("before high");
-  digitalWrite(24, HIGH);
-  Serial.println("after high");
-  */
 }
 
 /*
@@ -258,7 +245,6 @@ void loop() {
     if (startStatus == 1)
     {
       Serial.println("Start = 1");
-      digitalWrite(24, LOW);
       if (ACSActive == false)
       {
         Serial.println("Performing ACS Check...");
@@ -340,8 +326,6 @@ void disarm() {
 
 void meco_high() {
   Serial.println("in MECO");
-  digitalWrite(28, HIGH);
-  digitalWrite(24, LOW);
   mecoStatus = 1;
 
   pressStatus = 0; // Record Pressure Status as OFF
@@ -639,12 +623,10 @@ void ox_Pulse() {
       Timepulse = millis();
       digitalWrite(ox, HIGH);
       blipFire = 1;
-      digitalWrite(26, HIGH);
     }
     else if (blipFire == 1 && blipRest == 0 && Timepulse + blipDuration < millis())
     {
       digitalWrite(ox, LOW);
-      digitalWrite(26, LOW);
       blipFire = 0;
       blipRest = 1;
       Timepulse = millis();
@@ -652,7 +634,7 @@ void ox_Pulse() {
     else if (blipFire == 0 && blipRest == 1 && Timepulse + blipRestDuration < millis())
     {
       blipRest = 0;
-      digitalWrite(7 + oxPulseNo, HIGH);
+      digitalWrite(oxPulseNo, HIGH);
       oxPulseNo++;
     }
   }
@@ -767,26 +749,22 @@ void throttle()
   {
     digitalWrite(pressure, HIGH);
     digitalWrite(ox, LOW);
-    digitalWrite(26, LOW);
   }
   else if (throttlePressure >= currentPressure && currentPressure > ignitionPressure)
   {
     digitalWrite(pressure, HIGH);
     digitalWrite(ox, HIGH);
-    digitalWrite(26, HIGH);
   }
   else if (throttlePressure < ignitionPressure && ignitionPressure < currentPressure)
   {
     digitalWrite(pressure, LOW);
     digitalWrite(ox, LOW);
-    digitalWrite(26, LOW);
     Serial.print(" throttle < ig < current");
   }
   else if (throttlePressure < currentPressure && ignitionPressure < currentPressure && ignitionPressure < throttlePressure)
   {
     digitalWrite(pressure, LOW);
     digitalWrite(ox, HIGH);
-    digitalWrite(26, HIGH);
     Serial.print(" ig < throttle < current");
 
   }
