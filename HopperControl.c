@@ -2,9 +2,9 @@
 
 Lunar Hopper Control System Code
 
-Written by: Marian Daogaru, mn2g12, Phase V GDP
+Written by: Marian Daogaru, mn2g12
 
-Refactored and updated by: Jack Tyler, jt6g15 & Duncan Hamill, dh2g15, SUSS Phase VI
+Updated by: Jack Tyler, jt6g15, Duncan Hamill, dh2g15, Boateng Opoku-Yeboah, boy1g15
 
 ---------------------------------
 */
@@ -84,7 +84,7 @@ const unsigned long mecoMinHold = 1000; // Minimum duration of MECO
  * LOSS OF SIGNAL configuration
  */
 const float maxTilt = 15.0; // Maximum tilt angle allowed during LOS autopilot control. If exceeded, the Hopper is disarmed and the rocket killed. Valid for both pitch and yaw.
-const float descentPressure = 24.5; // bar abs. This is the pressure demanded by the LOS autopilot control. Should be pressure for hover at dry hopper - 4 bar
+const float descentPressure = 24.5; // bar abs. This is the pressure demanded by the LOS autopilot control. Should be pressure for hover at dry hopper - 4 bar - Verify this
 const unsigned long expFlightTime = 15000; // Expected flight time in milliseconds.
 
 /*
@@ -113,7 +113,6 @@ const unsigned long telemetryRxMax = 3000;
  * Initialise all to false.
  */
 
-//boolean armCommand = false;
 boolean armCommand = false;
 boolean ACScommand = false;
 boolean ACTtestcommand = false;
@@ -202,7 +201,7 @@ void setup() {
   pinMode(startPin, INPUT);
   pinMode(mecoPin, INPUT);
   pinMode(throttlePin, INPUT);
-  
+
 }
 
 /*
@@ -609,7 +608,7 @@ void ox_pulse() {
   }
 }
 
-/* 29/10/16, Jack Tyler: There seems to be ox_pulse() and ox_Pulse() -- the one below seems to be the main functioin, but this needs to be verified. */
+/* 29/10/16, Jack Tyler: There seems to be ox_pulse() and ox_Pulse() -- the one below seems to be the main function, but this needs to be verified. */
 
 void ox_Pulse() {
   PTVoltage = analogRead(PT); // Read the voltage from the pressure transducer
