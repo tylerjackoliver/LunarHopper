@@ -350,11 +350,10 @@ void meco_high() {
   digitalWrite(ox, LOW); // Close the ox solenoid
   digitalWrite(pressure, LOW); // Close the PRESSURE solenoid
   digitalWrite(vent, HIGH); // Open the VENT solenoid
-  //Open ACT valves to vent ACS system:
-  digitalWrite(ACSXRight, HIGH);
-  digitalWrite(ACSXLeft, HIGH);
-  digitalWrite(ACSYLeft, HIGH);
-  digitalWrite(ACSYRight, HIGH);
+  digitalWrite(ACSXRight, HIGH); //Open ACT valves to vent ACS system
+  digitalWrite(ACSXLeft, HIGH); // Open ACT valves to vent ACS system
+  digitalWrite(ACSYLeft, HIGH); // Open ACT valves to vent ACS system
+  digitalWrite(ACSYRight, HIGH); // Open ACT valves to vent ACS system
 
   if (!wasMECO)
   {
@@ -388,7 +387,7 @@ void ACS_Check()
     acquisitions_count = 0;
     ACSActive = true;//indiicate acs is active
     TimeZG = millis();//start zeroing time
-    ACS_Calibration();
+    ACS_Calibration(); // Calibrate ACS+sensors
     Serial.print(" Checking, Timezg = ");
     Serial.println(TimeZG);
   }
