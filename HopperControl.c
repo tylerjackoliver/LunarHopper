@@ -588,24 +588,24 @@ void ACS() {
  * Update (7/6/15): It was found that the code for blipping works when simulated with an LED but does not work for an actual solenoid valve. Modify/change as necessary.
  * Update (28/10/16): The above has been fixed but not verified.
 */
-void ox_pulse() {
-  if (oxBlipCommand == true && pressStatus == 1) {
-    // If Blip command is active and system is pressurised for catalyst warm up
-    if (oxpulse == false) { // If oxpulse command received this loop
-      Timepulse = millis(); // Record start time of pulse
-      oxpulse = true; // Record the oxpulse command has been received
-      digitalWrite(ox, HIGH); // Open the OX solenoid
-    } else {
-      if (Timepulse + blipDuration > millis()) { //If blip duration has passed
-        digitalWrite(ox, HIGH); // Open the OX solenoid
-      } else {
-        digitalWrite(ox, LOW); // Close the OX solenoid
-        oxpulse = false; // Reset the tracking variable
-        oxBlipCommand = false;  // Cancel signal to enable blip effect
-      }
-    }
-  }
-}
+// void ox_pulse() {
+//   if (oxBlipCommand == true && pressStatus == 1) {
+//     // If Blip command is active and system is pressurised for catalyst warm up
+//     if (oxpulse == false) { // If oxpulse command received this loop
+//       Timepulse = millis(); // Record start time of pulse
+//       oxpulse = true; // Record the oxpulse command has been received
+//       digitalWrite(ox, HIGH); // Open the OX solenoid
+//     } else {
+//       if (Timepulse + blipDuration > millis()) { //If blip duration has passed
+//         digitalWrite(ox, HIGH); // Open the OX solenoid
+//       } else {
+//         digitalWrite(ox, LOW); // Close the OX solenoid
+//         oxpulse = false; // Reset the tracking variable
+//         oxBlipCommand = false;  // Cancel signal to enable blip effect
+//       }
+//     }
+//   }
+// }
 
 /* 29/10/16, Jack Tyler: There seems to be ox_pulse() and ox_Pulse() -- the one below seems to be the main function, but this needs to be verified. */
 
@@ -638,49 +638,49 @@ void ox_Pulse() {
   }
 }
 
-/*
- * Modified and updated to latest version on 24/3/15 by Achal Mittal
- * Verified to work in May 2015 by using LEDs and potentiometer(to simulate pressure transducer) and throttle.
- * Controls the flow of ox to the rocket during flight
- *
- */
-void pressurization() {
+// /*
+//  * Modified and updated to latest version on 24/3/15 by Achal Mittal
+//  * Verified to work in May 2015 by using LEDs and potentiometer(to simulate pressure transducer) and throttle.
+//  * Controls the flow of ox to the rocket during flight
+//  *
+//  */
+// void pressurization() {
 
-  PTVoltage = analogRead(PT); // Read the voltage from the pressure transducer
-  currentPressure = ((PTVoltage / 1023 * 8) + 1)  ; // Calculate pressure in system in bar (abs)
+//   PTVoltage = analogRead(PT); // Read the voltage from the pressure transducer
+//   currentPressure = ((PTVoltage / 1023 * 8) + 1)  ; // Calculate pressure in system in bar (abs)
 
-  if (ventCommand == true) { // If vent signal is high
-    digitalWrite(vent, HIGH); // Open the VENT solenoid
-    ventStatus = 1; // Record ventStatus as active
-  }
-  else { // If vent signal is low
-    digitalWrite(vent, LOW); // CLose the VENT solenoid
-    ventStatus = 0; //Record ventStatus as closed
-  }
+//   if (ventCommand == true) { // If vent signal is high
+//     digitalWrite(vent, HIGH); // Open the VENT solenoid
+//     ventStatus = 1; // Record ventStatus as active
+//   }
+//   else { // If vent signal is low
+//     digitalWrite(vent, LOW); // CLose the VENT solenoid
+//     ventStatus = 0; //Record ventStatus as closed
+//   }
 
-  if (pressIgnitionCommand == true) {
-    // IGNITION PRESSURE
-    // System set to lower pressure to warm up the catalyst bed
-    pressStatus = 1; // Record system set to deliver the ignition pressure
-    digitalWrite(pressure, (currentPressure < ignitionPressure) ? HIGH : LOW); //this is an integrated if statement. If currentPressure < ignitionPressure, the system will write HIGH, otherwise it will write LOW
-  }
-  else if (pressCommand == true) {
-    // FLIGHT PRESSURE
-    pressStatus = 2;
+//   if (pressIgnitionCommand == true) {
+//     // IGNITION PRESSURE
+//     // System set to lower pressure to warm up the catalyst bed
+//     pressStatus = 1; // Record system set to deliver the ignition pressure
+//     digitalWrite(pressure, (currentPressure < ignitionPressure) ? HIGH : LOW); //this is an integrated if statement. If currentPressure < ignitionPressure, the system will write HIGH, otherwise it will write LOW
+//   }
+//   else if (pressCommand == true) {
+//     // FLIGHT PRESSURE
+//     pressStatus = 2;
 
-    if (throttleValue == 0) {
+//     if (throttleValue == 0) {
 
-      throttleValue = initialFlightPressure;
-    }
+//       throttleValue = initialFlightPressure;
+//     }
 
-    digitalWrite(pressure, (currentPressure < throttleValue) ? HIGH : LOW);
-  }
-  else {
-    // If system set to vent close pressure valve
-    digitalWrite(pressure, LOW);
-    pressStatus = 0; // Record pressure as OFF
-  }
-}
+//     digitalWrite(pressure, (currentPressure < throttleValue) ? HIGH : LOW);
+//   }
+//   else {
+//     // If system set to vent close pressure valve
+//     digitalWrite(pressure, LOW);
+//     pressStatus = 0; // Record pressure as OFF
+//   }
+// }
 
 void Pressurisation() {
 
