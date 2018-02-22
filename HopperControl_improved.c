@@ -13,11 +13,15 @@ void setup() {
   ACS_check(); // Has ACS_Callibration in function
 
   }
+
+
+
 void loop() {
 
   while (armCommand == false){ // Controller off, System DISARMED
 
    disarm();
+
    if (mecoCommand == 1){
       mecoStatus = 1
       meco_high();
@@ -34,15 +38,15 @@ void loop() {
       meco_high();
     }
 
-    while (oxPulseNo < oxNoPulses) {
+    while (oxPulseNo < oxNoPulses){
       Pressurisation();
       ox_Pulse();
       oxPulseNo++;
     }
 
-    Pressursation();
+    Pressursation(); // Pressurse tanks
     // FUNCITON FOR CHECKING PRESSURE IN TANKS
-    Throttle(); 
+    Throttle();
 
 
     if (mecoCommand == 1){
@@ -50,7 +54,7 @@ void loop() {
       meco_high();
     }
 
-    ACS();
+    ACS(); // ACS control
 
     }
   }
@@ -58,7 +62,8 @@ void loop() {
 
 void meco_high() {
   // This function turns on MECO
-  
+  // Edited
+
   Serial.println("in MECO");
   digitalWrite(28, HIGH);
   digitalWrite(24, LOW);
@@ -104,28 +109,27 @@ void meco_high() {
 void ACS_check(){
   // This function callibrates ACS
 
-  if (ACSActive == false) { //if acs has just been activated, start calibration process
+  Calibrated = false;
+  y_voltage_sum = 0;
+  x_voltage_sum = 0;
+  yacc_voltage_sum = 0;//y-axis acceleroometer voltage
+  zacc_voltage_sum = 0;//z-axis accelerometer voltage
+  xacc_voltage_sum = 0;//x-axis accelerometer voltage
+  acquisitions_count = 0;
+  ACSActive = true;//indiicate acs is active
+  TimeZG = millis();//start zeroing time
 
-    Calibrated = false;
-    y_voltage_sum = 0;
-    x_voltage_sum = 0;
-    yacc_voltage_sum = 0;//y-axis acceleroometer voltage
-    zacc_voltage_sum = 0;//z-axis accelerometer voltage
-    xacc_voltage_sum = 0;//x-axis accelerometer voltage
-    acquisitions_count = 0;
-    ACSActive = true;//indiicate acs is active
-    TimeZG = millis();//start zeroing time
-    ACS_Calibration();
-    ACS(); // Start main ACS function after callibration is complete
+  ACS_Calibration();
+  ACS(); // Start main ACS function after callibration is complete
 
-    } 
   }
 
 
 void ACS_Calibration() {
   // Function callibrates ACS
+  // Edited
 
-  while (TimeZG + CalibrationTime > millis()) { // If calibration time is not over
+  while (TimeZG + CalibrationTime > millis()) { //Callibrate for 40 seconds
     x_voltage_sum += analogRead(gyroPin_x);
     y_voltage_sum += analogRead(gyroPin_y);
     xacc_voltage_sum += analogRead(xpin);
@@ -135,21 +139,17 @@ void ACS_Calibration() {
     Serial.println(TimeZG + CalibrationTime-millis());
   }
 
-  if (Calibrated == false) {  // If calibration time has just finished
-    YGyro0V = (y_voltage_sum * Vcc) / (acquisitions_count * 1023.00); //Calculate zero rate voltage for y gro
-    XGyro0V = (x_voltage_sum * Vcc) / (acquisitions_count * 1023.00); // Calculate the zero rate voltage for the Z axis gyro
-    x_accZeroVoltage = (xacc_voltage_sum * Vcc) / (acquisitions_count * 1023);
-    y_accZeroVoltage = (yacc_voltage_sum * Vcc) / (acquisitions_count * 1023);
-    Calibrated = true;// Record calibration has finished
-    x_voltage_sum = 0;
-    y_voltage_sum = 0;
-    xacc_voltage_sum = 0;
-    yacc_voltage_sum = 0; // Reset variable ready for next task
-    acquisitions_count = 0; // Reset the counter
-
-  }
+  YGyro0V = (y_voltage_sum * Vcc) / (acquisitions_count * 1023.00); //Calculate zero rate voltage for y gro
+  XGyro0V = (x_voltage_sum * Vcc) / (acquisitions_count * 1023.00); // Calculate the zero rate voltage for the Z axis gyro
+  x_accZeroVoltage = (xacc_voltage_sum * Vcc) / (acquisitions_count * 1023);
+  y_accZeroVoltage = (yacc_voltage_sum * Vcc) / (acquisitions_count * 1023);
+  Calibrated = true;// Record calibration has finished
+  x_voltage_sum = 0;
+  y_voltage_sum = 0;
+  xacc_voltage_sum = 0;
+  yacc_voltage_sum = 0; // Reset variable ready for next task
+  acquisitions_count = 0; // Reset the counter
 }
-
 
 
 void ACT_Test(){
@@ -197,6 +197,7 @@ void ACT_Test(){
 void ACS() {
   // This function controls opening and closing of Valve
   // PID Should be implemented here
+  // Not edited
 
   if (Cycle == false) { // If cycle starting for first time or has just finished
     TimeACS = millis(); // Record the start time of the cycle
@@ -288,7 +289,98 @@ void ACS() {
 }
 
 
+void throttle() {
+
+  PTVoltage = analogRead(PT); // Read the voltage from the pressure transducer
+  currentPressure = ((PTVoltage / 1023 * 39) + 1)  ; // Calculate pressure in system in bar (abs)
+
+  throttlePressure = ((analogRead(throttlePin) / 1023 * 21 )) + 19;
+  Serial.print("throttle pressure = ");
+  Serial.print(throttlePressure);
+  Serial.print(" current pressure = ");
+  Serial.print(currentPressure);
+
+  if (currentPressure < ignitionPressure )
+  {
+    digitalWrite(pressure, HIGH);
+    digitalWrite(ox, LOW);
+    digitalWrite(26, LOW);
+  }
+  else if (throttlePressure >= currentPressure && currentPressure > ignitionPressure)
+  {
+    digitalWrite(pressure, HIGH);
+    digitalWrite(ox, HIGH);
+    digitalWrite(26, HIGH);
+  }
+  else if (throttlePressure < ignitionPressure && ignitionPressure < currentPressure)
+  {
+    digitalWrite(pressure, LOW);
+    digitalWrite(ox, LOW);
+    digitalWrite(26, LOW);
+    Serial.print(" throttle < ig< current");
+  }
+  else if (throttlePressure < currentPressure && ignitionPressure < currentPressure && ignitionPressure < throttlePressure)
+  {
+    digitalWrite(pressure, LOW);
+    digitalWrite(ox, HIGH);
+    digitalWrite(26, HIGH);
+    Serial.print(" ig < throttle < current");
+    
+  }
+
+  Serial.println("");
+}
 
 
+void Pressurisation() {
+  // Presssurises oxi tanks
 
+  PTVoltage = analogRead(PT); // Read the voltage from the pressure transducer
+  currentPressure = ((PTVoltage / 1023 * 39) + 1)  ; // Calculate pressure in system in bar (abs)
+
+  Serial.print("current Pressure = ");
+  Serial.print(currentPressure);
+  Serial.println("");
+  
+  if (ventCommand == true) { // If vent signal is high
+    digitalWrite(vent, HIGH); // Open the VENT solenoid
+    ventStatus = 1; // Record ventStatus as active
+  }
+  else { // If vent signal is low
+    digitalWrite(vent, LOW); // CLose the VENT solenoid
+    ventStatus = 0; //Record ventStatus as closed
+  }
+
+  if (currentPressure < ignitionPressure)
+  {
+    digitalWrite(pressure, HIGH);
+    pressStatus = 0;
+  }
+  else
+  {
+    digitalWrite(pressure, LOW);
+    pressStatus = 1;
+  }
+}
+
+
+void ox_pulse() {
+
+  if (oxBlipCommand == true && pressStatus == 1) {
+    // If Blip command is active and system is pressurised for catalyst warm up
+    if (oxpulse == false) { // If oxpulse command received this loop
+      Timepulse = millis(); // Record start time of pulse
+      oxpulse = true; // Record the oxpulse command has been received
+      digitalWrite(ox, HIGH); // Open the OX solenoid
+    } else {
+      if (Timepulse + blipDuration > millis()) { //If blip duration has passed
+        digitalWrite(ox, HIGH); // Open the OX solenoid
+      } else {
+        digitalWrite(ox, LOW); // Close the OX solenoid
+        oxpulse = false; // Reset the tracking variable
+        oxBlipCommand = false;  // Cancel signal to enable blip effect
+      }
+    }
+  }
+}
 
