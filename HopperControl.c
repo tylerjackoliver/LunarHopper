@@ -15,20 +15,19 @@ Updated by: Jack Tyler, jt6g15, Duncan Hamill, dh2g15, Boateng Opoku-Yeboah, boy
  * Set pins for various input and output devices on arduino. e.g.- gyro, accelerometer,pressure transducer and solenoid valves.
  */
 
-const int PT = A4; //Input from Pressure Transducer [ANALOG]
-int gyroPin_x = A0; //x-axis Gyro is connected to analog pin
-int gyroPin_y = A5; //y-axis gyro
-int xpin = A1;
-int ypin = A2;
-int zpin = A3;
-int ACSXRight = 6;//ACS valve right x_axis
-int ACSXLeft = 5;//ACS valve left x_axis
-int ACSYLeft = 3;//ACS valve left y_axis
-int ACSYRight = 4;//ACS valve right y_axis
-const int vent = 12; //Output to VENT solenoid control (SV2)
-const int pressure = 10; //Output to PRESSURE solenoid control (SV1)
-const int ox = 11; //Output to OX solenoid control(SV3)
-
+const int PRES_TRANS_PIN = A4;   //Input from Pressure Transducer [ANALOG]
+const int GYRO_PIN_X = A0; //x-axis Gyro is connected to analog pin
+const int GYRO_PIN_Y = A5; //y-axis gyro
+const int ACCEL_PIN_X = A1;      //x-axis accelerometer pin
+const int ACCEL_PIN_Y = A2;      //y-axis accelerometer pin
+const int ACCEL_PIN_Z = A3;      //z-axis accelerometer pin
+const int ACT_PIN_X_POS = 6;  //ACS valve right x_axis
+const int ACT_PIN_X_NEG = 5;   //ACS valve left x_axis
+const int ACT_PIN_Y_POS = 4;   //ACS valve left y_axis
+const int ACT_PIN_Y_NEG = 3;  //ACS valve right y_axis
+const int SOL_PIN_VENT = 12;      //Output to VENT solenoid control (SV2)
+const int SOL_PIN_PRES = 10;  //Output to PRESSURE solenoid control (SV1)
+const int SOL_PIN_OX = 11;        //Output to OX solenoid control(SV3)
 
 /*Gyro + Accelerometer setup*/
 float Vcc = 5.0;//Gyro is running at 5V from Arduino
@@ -188,16 +187,16 @@ float throttlePressure = 0;
 void setup() {
   Serial.begin(9600);
   Serial.println("Starting serial process...");
-  pinMode(PT, INPUT); //Define Pressure Transducer reading as an INPUT
-  pinMode(gyroPin_x, INPUT);//reads gyro input
-  pinMode(gyroPin_y, INPUT);
-  pinMode(ACSXRight, OUTPUT);
-  pinMode(ACSXLeft, OUTPUT);
-  pinMode(ACSYLeft, OUTPUT);
-  pinMode(ACSYRight, OUTPUT);
-  pinMode(vent, OUTPUT); //Define signal to Vent control as an OUTPUT
-  pinMode(pressure, OUTPUT); //Define signal to Pressure control as an OUTPUT
-  pinMode(ox, OUTPUT); //Define signal to OX control as an OUTPUT
+  pinMode(PRES_TRANS_PIN, INPUT); //Define Pressure Transducer reading as an INPUT
+  pinMode(GYRO_PIN_X, INPUT);//reads gyro input
+  pinMode(GYRO_PIN_Y, INPUT);
+  pinMode(ACT_PIN_X_POS, OUTPUT);
+  pinMode(ACT_PIN_X_NEG, OUTPUT);
+  pinMode(ACT_PIN_Y_POS, O4TPUT);
+  pinMode(ACT_PIN_Y_NEG, O3TPUT);
+  pinMode(SOL_PIN_VENT, OUTPUT); //Define signal to Vent control as an OUTPUT
+  pinMode(SOL_PIN_PRES, OUTPUT); //Define signal to Pressure control as an OUTPUT
+  pinMode(SOL_PIN_OX, OUTPUT); //Define signal to OX control as an OUTPUT
   pinMode(startPin, INPUT);
   pinMode(mecoPin, INPUT);
   pinMode(throttlePin, INPUT);
@@ -299,15 +298,15 @@ void disarm() {
   ACTventstatus = 0; //Recored ACTventstatus as ON
   ventStatus = 0; // Record ventStatus as ON
   Calibrated = false; // Reset the calibration tracking variable
-  PTVoltage = analogRead(PT); // Read the voltage from the pressure transducer
+  PTVoltage = analogRead(PRES_TRANS_PIN); // Read the voltage from the pressure transducer
   currentPressure = ((PTVoltage * 39) / 1023) + 1; // Calculate pressure in system in bar (abs)
-  digitalWrite(pressure, LOW); // Close the PRESSURE solenoid
-  digitalWrite(ox, LOW); // Close the OX solenoid
-  digitalWrite(vent, LOW); // Open the VENT solenoid
-  digitalWrite(ACSXRight, LOW);
-  digitalWrite(ACSXLeft, LOW);
-  digitalWrite(ACSYLeft, LOW);
-  digitalWrite(ACSYRight, LOW);
+  digitalWrite(SOL_PIN_PRES, LOW); // Close the PRESSURE solenoid
+  digitalWrite(SOL_PIN_OX, LOW); // Close the OX solenoid
+  digitalWrite(SOL_PIN_VENT, LOW); // Open the VENT solenoid
+  digitalWrite(ACT_PIN_X_POS, LOW);
+  digitalWrite(ACT_PIN_X_NEG, LOW);
+  digitalWrite(ACT_PIN_Y_POS, L4W);
+  digitalWrite(ACT_PIN_Y_NEG, L3W);
   if (mecoCommand == true) { // If MECO has been activated
     mecoStatus = 1; // Record mecoStatus as ON
   } else { // If MECO is inactive
@@ -345,15 +344,15 @@ void meco_high() {
   throttleValue = 0;
 
   Calibrated = false; //Reset Calibrated variable to ensure ACS systm recalibrates when system restarts
-  PTVoltage = analogRead(PT); //Read the voltage from the pressure transducer
+  PTVoltage = analogRead(PRES_TRANS_PIN); //Read the voltage from the pressure transducer
   currentPressure = ((PTVoltage * 39) / 1023) + 1; //Calculate pressure in system in bar (abs)
-  digitalWrite(ox, LOW); // Close the ox solenoid
-  digitalWrite(pressure, LOW); // Close the PRESSURE solenoid
-  digitalWrite(vent, HIGH); // Open the VENT solenoid
-  digitalWrite(ACSXRight, HIGH); //Open ACT valves to vent ACS system
-  digitalWrite(ACSXLeft, HIGH); // Open ACT valves to vent ACS system
-  digitalWrite(ACSYLeft, HIGH); // Open ACT valves to vent ACS system
-  digitalWrite(ACSYRight, HIGH); // Open ACT valves to vent ACS system
+  digitalWrite(SOL_PIN_OX, LOW); // Close the ox solenoid
+  digitalWrite(SOL_PIN_PRES, LOW); // Close the PRESSURE solenoid
+  digitalWrite(SOL_PIN_VENT, HIGH); // Open the VENT solenoid
+  digitalWrite(ACT_PIN_X_POS, HIGH); //Open ACT valves to vent ACS system
+  digitalWrite(ACT_PIN_X_NEG, HIGH); // Open ACT valves to vent ACS system
+  digitalWrite(ACT_PIN_Y_POS, H4GH); // Open ACT valves to vent ACS system
+  digitalWrite(ACT_PIN_Y_NEG, H3GH); // Open ACT valves to vent ACS system
 
   if (!wasMECO)
   {
@@ -425,34 +424,34 @@ void ACS_check() {
     int i;
     ACSstatus = 2; //set acs status to testing
     for (i = 0; i < 1; i++) { //run just once
-      digitalWrite(ACSXRight, HIGH);
-      digitalWrite(ACSXLeft, HIGH);
+      digitalWrite(ACT_PIN_X_POS, HIGH);
+      digitalWrite(ACT_PIN_X_NEG, HIGH);
       delay(15);
-      digitalWrite(ACSXRight, LOW);
-      digitalWrite(ACSXLeft, LOW);
-      digitalWrite(ACSYLeft, HIGH);
-      digitalWrite(ACSYRight, HIGH);
+      digitalWrite(ACT_PIN_X_POS, LOW);
+      digitalWrite(ACT_PIN_X_NEG, LOW);
+      digitalWrite(ACT_PIN_Y_POS, H4GH);
+      digitalWrite(ACT_PIN_Y_NEG, H3GH);
       delay(15);
-      digitalWrite(ACSYLeft, LOW);
-      digitalWrite(ACSYRight, LOW);
+      digitalWrite(ACT_PIN_Y_POS, L4W);
+      digitalWrite(ACT_PIN_Y_NEG, L3W);
     }
     ACTtestcommand = false;
   }
   else if (ACTventcommand == true) { //when ACTventcommand signal is high
     ACTventstatus = 1; //set ACTventstatus to on and open all valves
-    digitalWrite(ACSXRight, HIGH);
-    digitalWrite(ACSXLeft, HIGH);
-    digitalWrite(ACSYLeft, HIGH);
-    digitalWrite(ACSYRight, HIGH);
+    digitalWrite(ACT_PIN_X_POS, HIGH);
+    digitalWrite(ACT_PIN_X_NEG, HIGH);
+    digitalWrite(ACT_PIN_Y_POS, H4GH);
+    digitalWrite(ACT_PIN_Y_NEG, H3GH);
   }
 
   else {
     ACSstatus = 0;//otherwise set ACSstatus and ACTventstatus to off and close all solenoid valves
     ACTventstatus = 0;
-    digitalWrite(ACSXRight, LOW);
-    digitalWrite(ACSXLeft, LOW);
-    digitalWrite(ACSYLeft, LOW);
-    digitalWrite(ACSYRight, LOW);
+    digitalWrite(ACT_PIN_X_POS, LOW);
+    digitalWrite(ACT_PIN_X_NEG, LOW);
+    digitalWrite(ACT_PIN_Y_POS, L4W);
+    digitalWrite(ACT_PIN_Y_NEG, L3W);
     ACSActive = false;//restart calibration process in next run
 
   }
@@ -461,10 +460,10 @@ void ACS_check() {
 
 void ACS_Calibration() {
   if (TimeZG + CalibrationTime > millis()) { // If calibration time is not over
-    x_voltage_sum += analogRead(gyroPin_x);
-    y_voltage_sum += analogRead(gyroPin_y);
-    xacc_voltage_sum += analogRead(xpin);
-    yacc_voltage_sum += analogRead(ypin);
+    x_voltage_sum += analogRead(GYRO_PIN_X);
+    y_voltage_sum += analogRead(GYRO_PIN_Y);
+    xacc_voltage_sum += analogRead(ACCEL_PIN_X);
+    yacc_voltage_sum += analogRead(ACCEL_PIN_Y);
     acquisitions_count++; // Increment the counter
     Serial.print("Still calibrating at elapsed time: ");
     Serial.println(TimeZG + CalibrationTime-millis());
@@ -495,17 +494,17 @@ void ACS() {
     int i;
     // Get reading ten times-over sampling to reduce noise
     for (i = 0; i < 10; i++) {
-      y_sum += analogRead(gyroPin_y);
-      x_sum += analogRead(gyroPin_x); // Add current Z gyro voltage to running total
+      y_sum += analogRead(GYRO_PIN_Y);
+      x_sum += analogRead(GYRO_PIN_X); // Add current Z gyro voltage to running total
       sampling_count++; // Increment the counter
     }
     // Calculate angular rates and integrate for angles
     xRate = ( (x_sum * Vcc) / (sampling_count * 1023.) - XGyro0V) / gyroSensitivity * (1.0); // Calculate if any movement has occured in the X axis and correct angle (change sign due to how the gyro is mounted on the frame)
     yRate = ( (y_sum * Vcc) / (sampling_count * 1023.) - YGyro0V) / gyroSensitivity * (1.0); //same for y axis
 
-    float x_g = ((analogRead(xpin) * Vcc / 1023.00) - x_accZeroVoltage) / accSensitivity;
-    float y_g = ((analogRead(ypin) * Vcc / 1023.00) - y_accZeroVoltage) / accSensitivity;
-    float z_g = ((analogRead(zpin) * Vcc / 1023.00) - z_accZeroVoltage) / accSensitivity;
+    float x_g = ((analogRead(ACCEL_PIN_X) * Vcc / 1023.00) - x_accZeroVoltage) / accSensitivity;
+    float y_g = ((analogRead(ACCEL_PIN_Y) * Vcc / 1023.00) - y_accZeroVoltage) / accSensitivity;
+    float z_g = ((analogRead(ACCEL_PIN_Z) * Vcc / 1023.00) - z_accZeroVoltage) / accSensitivity;
 
 
     float c_g = sqrt(sq(y_g) + sq(z_g)); //calculate the gravity using y and z axis
@@ -527,37 +526,37 @@ void ACS() {
     if (abs(currentangle_x + a * xRate) < maxAngle) {
       if (abs(currentangle_x + a * xRate) >= k) {
         if (currentangle_x + a * xRate > 0) {    //control law
-          digitalWrite(ACSXRight, HIGH);            // open nozzle  LED1 on
-          digitalWrite(ACSXLeft, LOW);             //close nozzle  LED2 off
+          digitalWrite(ACT_PIN_X_POS, HIGH);            // open nozzle  LED1 on
+          digitalWrite(ACT_PIN_X_NEG, LOW);             //close nozzle  LED2 off
 
 
         }
         else if (currentangle_x + a * xRate < 0) {
           //Serial.println(currentangle+a*gyroRate);
-          digitalWrite(ACSXLeft, HIGH);            // open nozzle  LED2 on
-          digitalWrite(ACSXRight, LOW);             //close nozzle  LED1 off
+          digitalWrite(ACT_PIN_X_NEG, HIGH);            // open nozzle  LED2 on
+          digitalWrite(ACT_PIN_X_POS, LOW);             //close nozzle  LED1 off
 
         }
         else {
-          digitalWrite(ACSXLeft, LOW);            // open nozzle  LED2 off
-          digitalWrite(ACSXRight, LOW);             //close nozzle  LED1 off
+          digitalWrite(ACT_PIN_X_NEG, LOW);            // open nozzle  LED2 off
+          digitalWrite(ACT_PIN_X_POS, LOW);             //close nozzle  LED1 off
         }
       }
       else if (abs(currentangle_y + a * yRate) >= k) {
         if (currentangle_y + a * yRate > 0) {    //control law
-          digitalWrite(ACSYLeft, HIGH);            // open nozzle  LED3 on
-          digitalWrite(ACSYRight, LOW);             //close nozzle  LED4 off
+          digitalWrite(ACT_PIN_Y_POS, H4GH);            // open nozzle  LED3 on
+          digitalWrite(ACT_PIN_Y_NEG, L3W);             //close nozzle  LED4 off
 
         }
         else if (currentangle_y + a * yRate < 0) {
 
-          digitalWrite(ACSYRight, HIGH);            // open nozzle  LED4 on
-          digitalWrite(ACSYLeft, LOW);             //close nozzle  LED3 off
+  4       digitalWrite(ACT_PIN_Y_NEG, HIGH);            // open nozzle  LED4 on
+  3       digitalWrite(ACT_PIN_Y_POS, LOW);             //close nozzle  LED3 off
 
         }
         else {
-          digitalWrite(ACSYLeft, LOW);            // open nozzle  LED3 off
-          digitalWrite(ACSYRight, LOW);             //close nozzle  LED4 off
+          digitalWrite(ACT_PIN_Y_POS, L4W);            // open nozzle  LED3 off
+          digitalWrite(ACT_PIN_Y_NEG, L3W);             //close nozzle  LED4 off
         }
       }
 
@@ -594,12 +593,12 @@ void ACS() {
 //     if (oxpulse == false) { // If oxpulse command received this loop
 //       Timepulse = millis(); // Record start time of pulse
 //       oxpulse = true; // Record the oxpulse command has been received
-//       digitalWrite(ox, HIGH); // Open the OX solenoid
+//       digitalWrite(SOL_PIN_OX, HIGH); // Open the OX solenoid
 //     } else {
 //       if (Timepulse + blipDuration > millis()) { //If blip duration has passed
-//         digitalWrite(ox, HIGH); // Open the OX solenoid
+//         digitalWrite(SOL_PIN_OX, HIGH); // Open the OX solenoid
 //       } else {
-//         digitalWrite(ox, LOW); // Close the OX solenoid
+//         digitalWrite(SOL_PIN_OX, LOW); // Close the OX solenoid
 //         oxpulse = false; // Reset the tracking variable
 //         oxBlipCommand = false;  // Cancel signal to enable blip effect
 //       }
@@ -610,7 +609,7 @@ void ACS() {
 /* 29/10/16, Jack Tyler: There seems to be ox_pulse() and ox_Pulse() -- the one below seems to be the main function, but this needs to be verified. */
 
 void ox_Pulse() {
-  PTVoltage = analogRead(PT); // Read the voltage from the pressure transducer
+  PTVoltage = analogRead(PRES_TRANS_PIN); // Read the voltage from the pressure transducer
   currentPressure = ((PTVoltage / 1023 * 39) + 1)  ; // Calculate pressure in system in bar (abs)
 
   Pressurisation();
@@ -619,12 +618,12 @@ void ox_Pulse() {
     if (blipFire == 0 && blipRest == 0)
     {
       Timepulse = millis();
-      digitalWrite(ox, HIGH);
+      digitalWrite(SOL_PIN_OX, HIGH);
       blipFire = 1;
     }
     else if (blipFire == 1 && blipRest == 0 && Timepulse + blipDuration < millis())
     {
-      digitalWrite(ox, LOW);
+      digitalWrite(SOL_PIN_OX, LOW);
       blipFire = 0;
       blipRest = 1;
       Timepulse = millis();
@@ -646,15 +645,15 @@ void ox_Pulse() {
 //  */
 // void pressurization() {
 
-//   PTVoltage = analogRead(PT); // Read the voltage from the pressure transducer
+//   PTVoltage = analogRead(PRES_TRANS_PIN); // Read the voltage from the pressure transducer
 //   currentPressure = ((PTVoltage / 1023 * 8) + 1)  ; // Calculate pressure in system in bar (abs)
 
 //   if (ventCommand == true) { // If vent signal is high
-//     digitalWrite(vent, HIGH); // Open the VENT solenoid
+//     digitalWrite(SOL_PIN_VENT, HIGH); // Open the VENT solenoid
 //     ventStatus = 1; // Record ventStatus as active
 //   }
 //   else { // If vent signal is low
-//     digitalWrite(vent, LOW); // CLose the VENT solenoid
+//     digitalWrite(SOL_PIN_VENT, LOW); // CLose the VENT solenoid
 //     ventStatus = 0; //Record ventStatus as closed
 //   }
 
@@ -662,7 +661,7 @@ void ox_Pulse() {
 //     // IGNITION PRESSURE
 //     // System set to lower pressure to warm up the catalyst bed
 //     pressStatus = 1; // Record system set to deliver the ignition pressure
-//     digitalWrite(pressure, (currentPressure < ignitionPressure) ? HIGH : LOW); //this is an integrated if statement. If currentPressure < ignitionPressure, the system will write HIGH, otherwise it will write LOW
+//     digitalWrite(SOL_PIN_PRES, (currentPressure < ignitionPressure) ? HIGH : LOW); //this is an integrated if statement. If currentPressure < ignitionPressure, the system will write HIGH, otherwise it will write LOW
 //   }
 //   else if (pressCommand == true) {
 //     // FLIGHT PRESSURE
@@ -673,18 +672,18 @@ void ox_Pulse() {
 //       throttleValue = initialFlightPressure;
 //     }
 
-//     digitalWrite(pressure, (currentPressure < throttleValue) ? HIGH : LOW);
+//     digitalWrite(SOL_PIN_PRES, (currentPressure < throttleValue) ? HIGH : LOW);
 //   }
 //   else {
 //     // If system set to vent close pressure valve
-//     digitalWrite(pressure, LOW);
+//     digitalWrite(SOL_PIN_PRES, LOW);
 //     pressStatus = 0; // Record pressure as OFF
 //   }
 // }
 
 void Pressurisation() {
 
-  PTVoltage = analogRead(PT); // Read the voltage from the pressure transducer
+  PTVoltage = analogRead(PRES_TRANS_PIN); // Read the voltage from the pressure transducer
   currentPressure = ((PTVoltage / 1023 * 39) + 1)  ; // Calculate pressure in system in bar (abs)
 
   Serial.print("Current pressure = ");
@@ -692,22 +691,22 @@ void Pressurisation() {
   Serial.println("");
 
   if (ventCommand == true) { // If vent signal is high
-    digitalWrite(vent, HIGH); // Open the VENT solenoid
+    digitalWrite(SOL_PIN_VENT, HIGH); // Open the VENT solenoid
     ventStatus = 1; // Record ventStatus as active
   }
   else { // If vent signal is low
-    digitalWrite(vent, LOW); // CLose the VENT solenoid
+    digitalWrite(SOL_PIN_VENT, LOW); // CLose the VENT solenoid
     ventStatus = 0; //Record ventStatus as closed
   }
 
   if (currentPressure < ignitionPressure)
   {
-    digitalWrite(pressure, HIGH);
+    digitalWrite(SOL_PIN_PRES, HIGH);
     pressStatus = 0;
   }
   else
   {
-    digitalWrite(pressure, LOW);
+    digitalWrite(SOL_PIN_PRES, LOW);
     pressStatus = 1;
   }
 }
@@ -720,21 +719,21 @@ void thruster() {
     {
       flightStart = millis();
     }
-    digitalWrite(ox, HIGH); // Open the ox solenoid
+    digitalWrite(SOL_PIN_OX, HIGH); // Open the ox solenoid
     oxStatus = 1; // Record ox as ON
   }
   else {
-    digitalWrite(ox, LOW); // Close the ox solenoid
+    digitalWrite(SOL_PIN_OX, LOW); // Close the ox solenoid
     oxStatus = 0;
     if (!oxpulse) {
-      digitalWrite(ox, LOW);
+      digitalWrite(SOL_PIN_OX, LOW);
     }
   }
 }
 
 void throttle()
 {
-  PTVoltage = analogRead(PT); // Read the voltage from the pressure transducer
+  PTVoltage = analogRead(PRES_TRANS_PIN); // Read the voltage from the pressure transducer
   currentPressure = ((PTVoltage / 1023 * 39) + 1)  ; // Calculate pressure in system in bar (abs)
 
   throttlePressure = ((analogRead(throttlePin) / 1023 * 21 )) + 19;
@@ -745,24 +744,24 @@ void throttle()
 
   if (currentPressure < ignitionPressure )
   {
-    digitalWrite(pressure, HIGH);
-    digitalWrite(ox, LOW);
+    digitalWrite(SOL_PIN_PRES, HIGH);
+    digitalWrite(SOL_PIN_OX, LOW);
   }
   else if (throttlePressure >= currentPressure && currentPressure > ignitionPressure)
   {
-    digitalWrite(pressure, HIGH);
-    digitalWrite(ox, HIGH);
+    digitalWrite(SOL_PIN_PRES, HIGH);
+    digitalWrite(SOL_PIN_OX, HIGH);
   }
   else if (throttlePressure < ignitionPressure && ignitionPressure < currentPressure)
   {
-    digitalWrite(pressure, LOW);
-    digitalWrite(ox, LOW);
+    digitalWrite(SOL_PIN_PRES, LOW);
+    digitalWrite(SOL_PIN_OX, LOW);
     Serial.print(" throttle < ig < current");
   }
   else if (throttlePressure < currentPressure && ignitionPressure < currentPressure && ignitionPressure < throttlePressure)
   {
-    digitalWrite(pressure, LOW);
-    digitalWrite(ox, HIGH);
+    digitalWrite(SOL_PIN_PRES, LOW);
+    digitalWrite(SOL_PIN_OX, HIGH);
     Serial.print(" ig < throttle < current");
 
   }
