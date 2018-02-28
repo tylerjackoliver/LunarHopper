@@ -290,14 +290,7 @@ void loop() {
  */
 
 void disarm() {
-  bool wasDisarmed;
 
-  // Check if the hopper has just been disarmed (i.e. its status is still set to armed)
-  if (armStatus == 1)
-    wasDisarmed = true;
-  else
-    wasDisarmed = false; 
-  
   armStatus = 0; // Record armStatus as OFF
   pressStatus = 0; // Record pressStatus as OFF
   oxStatus = 0; // Record oxStatus as OFF
