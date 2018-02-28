@@ -55,12 +55,12 @@ float xacc_voltage_sum = 0;//x-axis accelerometer voltage
 float x_sum = 0;//sum of x-gyro readings used after calibration to reduce noise within the ACS(); function.
 float y_sum = 0;//;//sum of y-gyro readings used after calibration to reduce noise within the ACS(); function.
 const unsigned long Time_Interval = 25; //Time in milliseconds between each adjustment of the ACS system
-boolean Cycle = false; //Tracking variable to record if ACS system is mid cycle
-boolean wasOXon = false; //Variable to track if control law can be activated based on whether OX caommand has been given or not.
+bool Cycle = false; //Tracking variable to record if ACS system is mid cycle
+bool wasOXon = false; //Variable to track if control law can be activated based on whether OX caommand has been given or not.
 unsigned long sampling_count = 0;//used within ACS function in conjunction with z_sum and y_sum. records the no. of readings taken to reduce noise.
 unsigned long TimeZG = 0; //Variable to record the start time of zeroing the gyros
-boolean ACSActive = false; //Tracking variable to detect if ACS subsystem is active
-boolean Calibrated = false; //Tracking variable to record if ACS system has been calibrated
+bool ACSActive = false; //Tracking variable to detect if ACS subsystem is active
+bool Calibrated = false; //Tracking variable to record if ACS system has been calibrated
 float accSensitivity = 0.8;//accelerometer sensitivity
 float acc_angleinradians_x;
 float acc_angleinradians_y;
@@ -113,16 +113,16 @@ const unsigned long telemetryRxMax = 3000;
  * Initialise all to false.
  */
 
-boolean armCommand = false;
-boolean ACScommand = false;
-boolean ACTtestcommand = false;
-boolean ACTventcommand = false;
-boolean pressCommand = false;
-boolean pressIgnitionCommand = false;
-boolean oxCommand = false;
-boolean oxBlipCommand = false;
-boolean ventCommand = false;
-boolean mecoCommand = false;
+bool armCommand = false;
+bool ACScommand = false;
+bool ACTtestcommand = false;
+bool ACTventcommand = false;
+bool pressCommand = false;
+bool pressIgnitionCommand = false;
+bool oxCommand = false;
+bool oxBlipCommand = false;
+bool ventCommand = false;
+bool mecoCommand = false;
 double throttleValue = 0.0;
 
 /*
@@ -159,11 +159,11 @@ float PTVoltage = 0; //Variable used to store the voltage output from the pressu
 
 // Variables used for oxblip
 unsigned long Timepulse = 0; //Variable used to record the start time of an ox blip
-boolean oxpulse = false; //Tracking variable used to record if oxpulse has been started
+bool oxpulse = false; //Tracking variable used to record if oxpulse has been started
 
 // Variables for MECO control
 unsigned long mecoStart = 0;//start time of meco
-boolean wasMECO = false;//check if meco was on or off
+bool wasMECO = false;//check if meco was on or off
 
 // Variables for LOS control
 unsigned long flightStart = 0;//variable to store flight time
@@ -291,7 +291,7 @@ void loop() {
  */
 
 void disarm() {
-  boolean wasDisarmed = (armStatus == 1) ? true : false; // Record to be true if the hopper has just been disarmed (i.e. its status is still set to armed)
+  bool wasDisarmed = (armStatus == 1) ? true : false; // Record to be true if the hopper has just been disarmed (i.e. its status is still set to armed)
   armStatus = 0; // Record armStatus as OFF
   pressStatus = 0; // Record pressStatus as OFF
   oxStatus = 0; // Record oxStatus as OFF
