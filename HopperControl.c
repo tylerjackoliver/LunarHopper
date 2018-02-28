@@ -128,15 +128,27 @@ double throttleValue = 0.0;
  * System status
  * Used to record the current state of the hopper
  */
+// Constant states
+const int STATUS_OFF = 0;
+const int STATUS_ON = 1;
+const int STATUS_TEST = 2; // STATUS_TEST only used once, consider removing
+/* Note: if STATUS_TEST is removed, can change these ints to bools, which makes 
+ more logical sense in an ON/OFF perspective. I don't think any of the if 
+ statements would require changing, since if (status[true] == STATUS_ON[true]) still works, 
+ where bit in brackets is what it evaluates to. */
 
-int armStatus = 0;
-int ACSstatus = 0;
-int ACTteststatus = 0;
-int ACTventstatus = 0;
-int pressStatus = 0;
-int oxStatus = 0;
-int ventStatus = 0;
-int mecoStatus = 0;
+int armStatus = STATUS_OFF;
+int ACSstatus = STATUS_OFF;
+int ACTteststatus = STATUS_OFF; // !!! not found elsewhere
+int ACTventstatus = STATUS_OFF;
+int oxStatus = STATUS_OFF;
+int ventStatus = STATUS_OFF;
+int mecoStatus = STATUS_OFF;
+// pressStatus does not follow the same as others,
+// has an off, ignition pressure, and flight pressure
+// consider changing how this behaves, or adding other
+// STATUS constants for consistency across status variables
+int pressStatus = STATUS_OFF;
 
 /*
  * Data that will be sent to the PC for telemetry purposes
@@ -168,7 +180,7 @@ bool wasMECO = false;//check if meco was on or off
 unsigned long flightStart = 0;//variable to store flight time
 
 // Variables for Start
-int startStatus = 0;
+int startStatus = STATUS_OFF;
 int startPin = 30;
 int mecoPin = 2;
 const unsigned long blipRestDuration = 5000; //duration for which the system will wait for heat to dissipare in the fuel
@@ -215,19 +227,19 @@ void loop() {
     }
     else {
       // System is ARMED
-      armStatus = 1; // Record armStatus as ON
+      armStatus = STATUS_ON;
 
       // Don't listen if MECO has just been turned on
       if (mecoStart + mecoMinHold < millis())
       {
         if (mecoCommand == true) {
           // MECO is activated
-          mecoStatus = 1;
+          mecoStatus = STATUS_ON;
           meco_high();
         } else {
           // NORMAL OPERATION (MECO DOWN, ARM ON)
           wasMECO = false;
-          mecoStatus = 0;
+          mecoStatus = STATUS_OFF;
           ACS_check(); // Run ACS subsystem function
           pressurization(); // Run Vent/Pressure subsystem function
           ox_pulse(); // Run OX PULSE function
@@ -237,10 +249,10 @@ void loop() {
     } */
   Serial.print("In loop:   ");
   Serial.println(TimeZG);
-  if (mecoStatus == 0)
+  if (mecoStatus == STATUS_OFF)
   {
-    Serial.println("MECO status = 0");
-    if (startStatus == 1)
+    Serial.println("MECO status: OFF");
+    if (startStatus == STATUS_ON)
     {
       Serial.println("Start = 1");
       if (ACSActive == false)
@@ -291,12 +303,15 @@ void loop() {
 
 void disarm() {
 
-  armStatus = 0; // Record armStatus as OFF
-  pressStatus = 0; // Record pressStatus as OFF
-  oxStatus = 0; // Record oxStatus as OFF
-  ACSstatus = 0; // Record acsStatus as OFF
-  ACTventstatus = 0; //Recored ACTventstatus as ON
-  ventStatus = 0; // Record ventStatus as ON
+  armStatus = STATUS_OFF;
+  pressStatus = STATUS_OFF;
+  oxStatus = STATUS_OFF;
+  ACSstatus = STATUS_OFF;
+ // following two vent statuses were previously 0, but commented as ON.
+ // 0 being ON conflicted with all other cases. Trend was 0->OFF 1->ON.
+ // left as OFF (0) for separate commit.
+  ACTventstatus = STATUS_OFF;
+  ventStatus = STATUS_OFF;
   Calibrated = false; // Reset the calibration tracking variable
   PTVoltage = analogRead(PRES_TRANS_PIN); // Read the voltage from the pressure transducer
   currentPressure = ((PTVoltage * 39) / 1023) + 1; // Calculate pressure in system in bar (abs)
@@ -308,9 +323,9 @@ void disarm() {
   digitalWrite(ACT_PIN_Y_POS, L4W);
   digitalWrite(ACT_PIN_Y_NEG, L3W);
   if (mecoCommand == true) { // If MECO has been activated
-    mecoStatus = 1; // Record mecoStatus as ON
+    mecoStatus = STATUS_ON;
   } else { // If MECO is inactive
-    mecoStatus = 0; // Record mecoStatus as OFF
+    mecoStatus = STATUS_OFF;
   }
 }
 
@@ -324,14 +339,14 @@ void disarm() {
 
 void meco_high() {
   Serial.println("in MECO");
-  mecoStatus = 1;
+  mecoStatus = STATUS_ON;
 
-  pressStatus = 0; // Record Pressure Status as OFF
-  oxStatus = 0; // Record Ox Status as OFF
-  ACSstatus = 0; // Record ACS Status as OFF
-  ACTventstatus = 1; //Record ACTventstatus as ON
-  ventStatus = 1; // Record vent status as ON
-  startStatus = 0;
+  pressStatus = STATUS_OFF;
+  oxStatus = STATUS_OFF;
+  ACSstatus = STATUS_OFF;
+  ACTventstatus = STATUS_ON;
+  ventStatus = STATUS_ON;
+  startStatus = STATUS_OFF;
 
   // Override all the radio commands so that when MECO is turned off, the system stays shut
   ACScommand = false;
@@ -394,7 +409,7 @@ void ACS_Check()
 
 void ACS_check() {
   if (ACScommand == true) { //If ACS signal is high
-    ACSstatus = 1;//set ACSstatus to 1
+    ACSstatus = STATUS_ON;
 
     if (ACSActive == false) { //if acs has just been activated, start calibration process
       Calibrated = false;
@@ -422,7 +437,7 @@ void ACS_check() {
   //The command will open two valves on each axis for 15 ms one after the other
   else if (ACTtestcommand == true) { //if ACTtestcommand signal is high
     int i;
-    ACSstatus = 2; //set acs status to testing
+    ACSstatus = STATUS_TEST;
     for (i = 0; i < 1; i++) { //run just once
       digitalWrite(ACT_PIN_X_POS, HIGH);
       digitalWrite(ACT_PIN_X_NEG, HIGH);
@@ -438,7 +453,8 @@ void ACS_check() {
     ACTtestcommand = false;
   }
   else if (ACTventcommand == true) { //when ACTventcommand signal is high
-    ACTventstatus = 1; //set ACTventstatus to on and open all valves
+    ACTventstatus = STATUS_ON; 
+    //open all valves
     digitalWrite(ACT_PIN_X_POS, HIGH);
     digitalWrite(ACT_PIN_X_NEG, HIGH);
     digitalWrite(ACT_PIN_Y_POS, H4GH);
@@ -446,8 +462,9 @@ void ACS_check() {
   }
 
   else {
-    ACSstatus = 0;//otherwise set ACSstatus and ACTventstatus to off and close all solenoid valves
-    ACTventstatus = 0;
+    ACSstatus = STATUS_OFF;
+    ACTventstatus = STATUS_OFF;
+    //close all valves
     digitalWrite(ACT_PIN_X_POS, LOW);
     digitalWrite(ACT_PIN_X_NEG, LOW);
     digitalWrite(ACT_PIN_Y_POS, L4W);
@@ -588,7 +605,7 @@ void ACS() {
  * Update (28/10/16): The above has been fixed but not verified.
 */
 // void ox_pulse() {
-//   if (oxBlipCommand == true && pressStatus == 1) {
+//   if (oxBlipCommand == true && pressStatus == STATUS_ON) {
 //     // If Blip command is active and system is pressurised for catalyst warm up
 //     if (oxpulse == false) { // If oxpulse command received this loop
 //       Timepulse = millis(); // Record start time of pulse
@@ -614,7 +631,7 @@ void ox_Pulse() {
 
   Pressurisation();
 
-  if (pressStatus == 1) {
+  if (pressStatus == STATUS_ON) {
     if (blipFire == 0 && blipRest == 0)
     {
       Timepulse = millis();
@@ -650,11 +667,11 @@ void ox_Pulse() {
 
 //   if (ventCommand == true) { // If vent signal is high
 //     digitalWrite(SOL_PIN_VENT, HIGH); // Open the VENT solenoid
-//     ventStatus = 1; // Record ventStatus as active
+//     ventStatus = STATUS_ON;
 //   }
 //   else { // If vent signal is low
 //     digitalWrite(SOL_PIN_VENT, LOW); // CLose the VENT solenoid
-//     ventStatus = 0; //Record ventStatus as closed
+//     ventStatus = STATUS_OFF;
 //   }
 
 //   if (pressIgnitionCommand == true) {
@@ -683,7 +700,7 @@ void ox_Pulse() {
 //   else {
 //     // If system set to vent close pressure valve
 //     digitalWrite(SOL_PIN_PRES, LOW);
-//     pressStatus = 0; // Record pressure as OFF
+//     pressStatus = STATUS_OFF; // Record pressure as OFF
 //   }
 // }
 
@@ -698,17 +715,17 @@ void Pressurisation() {
 
   if (ventCommand == true) { // If vent signal is high
     digitalWrite(SOL_PIN_VENT, HIGH); // Open the VENT solenoid
-    ventStatus = 1; // Record ventStatus as active
+    ventStatus = STATUS_ON;
   }
   else { // If vent signal is low
     digitalWrite(SOL_PIN_VENT, LOW); // CLose the VENT solenoid
-    ventStatus = 0; //Record ventStatus as closed
+    ventStatus = STATUS_OFF;
   }
 
   if (currentPressure < ignitionPressure)
   {
     digitalWrite(SOL_PIN_PRES, HIGH);
-    pressStatus = 0;
+    pressStatus = STATUS_OFF;
   }
   else
   {
@@ -721,16 +738,16 @@ void thruster() {
 
   // If ox command is high and vent closed, but we're not blipping
   if (oxCommand == true && ventCommand == false) {
-    if (oxStatus == 0) // If the ox is currently OFF, i.e. we just asked it to open, then record the current time as the start of flight
+    if (oxStatus == STATUS_OFF) // If the ox is currently OFF, i.e. we just asked it to open, then record the current time as the start of flight
     {
       flightStart = millis();
     }
     digitalWrite(SOL_PIN_OX, HIGH); // Open the ox solenoid
-    oxStatus = 1; // Record ox as ON
+    oxStatus = STATUS_ON;
   }
   else {
     digitalWrite(SOL_PIN_OX, LOW); // Close the ox solenoid
-    oxStatus = 0;
+    oxStatus = STATUS_OFF;
     if (!oxpulse) {
       digitalWrite(SOL_PIN_OX, LOW);
     }
