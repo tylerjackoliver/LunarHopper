@@ -15,19 +15,19 @@ Updated by: Jack Tyler, jt6g15, Duncan Hamill, dh2g15, Boateng Opoku-Yeboah, boy
  * Set pins for various input and output devices on arduino. e.g.- gyro, accelerometer,pressure transducer and solenoid valves.
  */
 
-const int PRES_TRANS_PIN = A4;   //Input from Pressure Transducer [ANALOG]
-const int GYRO_PIN_X = A0; //x-axis Gyro is connected to analog pin
-const int GYRO_PIN_Y = A5; //y-axis gyro
-const int ACCEL_PIN_X = A1;      //x-axis accelerometer pin
-const int ACCEL_PIN_Y = A2;      //y-axis accelerometer pin
-const int ACCEL_PIN_Z = A3;      //z-axis accelerometer pin
-const int ACT_PIN_X_POS = 6;  //ACS valve right x_axis
-const int ACT_PIN_X_NEG = 5;   //ACS valve left x_axis
-const int ACT_PIN_Y_POS = 4;   //ACS valve left y_axis
-const int ACT_PIN_Y_NEG = 3;  //ACS valve right y_axis
-const int SOL_PIN_VENT = 12;      //Output to VENT solenoid control (SV2)
-const int SOL_PIN_PRES = 10;  //Output to PRESSURE solenoid control (SV1)
-const int SOL_PIN_OX = 11;        //Output to OX solenoid control(SV3)
+const int PRES_TRANS_PIN = A4;  //Input from Pressure Transducer [ANALOG]
+const int GYRO_PIN_X = A0;      //x-axis Gyro is connected to analog pin
+const int GYRO_PIN_Y = A5;      //y-axis gyro
+const int ACCEL_PIN_X = A1;     //x-axis accelerometer pin
+const int ACCEL_PIN_Y = A2;     //y-axis accelerometer pin
+const int ACCEL_PIN_Z = A3;     //z-axis accelerometer pin
+const int ACT_PIN_X_POS = 6;    //ACS valve positive x_axis
+const int ACT_PIN_X_NEG = 5;    //ACS valve negative x_axis
+const int ACT_PIN_Y_POS = 4;    //ACS valve positive y_axis
+const int ACT_PIN_Y_NEG = 3;    //ACS valve negative y_axis
+const int SOL_PIN_VENT = 12;    //Output to VENT solenoid control (SV2)
+const int SOL_PIN_PRES = 10;    //Output to PRESSURE solenoid control (SV1)
+const int SOL_PIN_OX = 11;      //Output to OX solenoid control(SV3)
 
 /*Gyro + Accelerometer setup*/
 float Vcc = 5.0;//Gyro is running at 5V from Arduino
@@ -290,7 +290,14 @@ void loop() {
  */
 
 void disarm() {
-  bool wasDisarmed = (armStatus == 1) ? true : false; // Record to be true if the hopper has just been disarmed (i.e. its status is still set to armed)
+  bool wasDisarmed;
+
+  // Check if the hopper has just been disarmed (i.e. its status is still set to armed)
+  if (armStatus == 1)
+    wasDisarmed = true;
+  else
+    wasDisarmed = false; 
+  
   armStatus = 0; // Record armStatus as OFF
   pressStatus = 0; // Record pressStatus as OFF
   oxStatus = 0; // Record oxStatus as OFF
@@ -661,7 +668,10 @@ void ox_Pulse() {
 //     // IGNITION PRESSURE
 //     // System set to lower pressure to warm up the catalyst bed
 //     pressStatus = 1; // Record system set to deliver the ignition pressure
-//     digitalWrite(SOL_PIN_PRES, (currentPressure < ignitionPressure) ? HIGH : LOW); //this is an integrated if statement. If currentPressure < ignitionPressure, the system will write HIGH, otherwise it will write LOW
+//     if (currentPressure < ignitionPressure)
+//       digitalWrite(SOL_PIN_PRES, HIGH);
+//     else
+//       digitalWrite(SOL_PIN_PRES, LOW);
 //   }
 //   else if (pressCommand == true) {
 //     // FLIGHT PRESSURE
@@ -672,7 +682,10 @@ void ox_Pulse() {
 //       throttleValue = initialFlightPressure;
 //     }
 
-//     digitalWrite(SOL_PIN_PRES, (currentPressure < throttleValue) ? HIGH : LOW);
+//     if (currentPressure < throttleValue)
+//       digitalWrite(SOL_PIN_PRES, HIGH);
+//     else
+//       digitalWrite(SOL_PIN_PRES, LOW);
 //   }
 //   else {
 //     // If system set to vent close pressure valve
