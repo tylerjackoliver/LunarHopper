@@ -39,42 +39,42 @@ const int SOL_PIN_PRES = 10;    //Output to PRESSURE solenoid control (SV1)
 const int SOL_PIN_OX = 11;      //Output to OX solenoid control(SV3)
 
 /*Gyro + Accelerometer setup*/
-float Vcc = 5.0;//Gyro is running at 5V from Arduino
-float gyroSensitivity = 0.04;//gyro xensitivity at 40mV/deg/s
+float Vcc = 5.0;                //Gyro is running at 5V from Arduino
+float gyroSensitivity = 0.04;   //gyro xensitivity at 40mV/deg/s
 float z_accZeroVoltage = 1.775; //accelerometer z axis 0 voltage
-float x_accZeroVoltage = 0; //accelerometer x axis 0 voltage
-float y_accZeroVoltage = 0; //accelerometer y axis 0 voltage
+float x_accZeroVoltage = 0;     //accelerometer x axis 0 voltage
+float y_accZeroVoltage = 0;     //accelerometer y axis 0 voltage
 
 /*ACS configuration*/
-float a = 0.5;// gain of control law
-float k = 0.1;// threshold for control law (deadband) #maybe this is a bit too low, might require some changes !!!
-float XGyro0V;//variable to store the x -axis gyro's 0 (no rotation) voltage
-float YGyro0V;//variable to store the y-axis gyro's 0 (no rotation) voltage
-float xRate = 0;//initialise x-axis gyro rate
-float yRate = 0;//initialise y-axis gyro rate
-unsigned long TimeACS = 0; //Variable used to record the start time of each ACS(); loop
-unsigned long  CalibrationTime = 40000;//Time used to zero the gyro
-unsigned long acquisitions_count = 0; //Variable used to record the number of cycles used for ACS calibration
-float x_voltage_sum = 0; //x gyro voltage
-float y_voltage_sum = 0;//y gyro voltage
-float yacc_voltage_sum = 0;//y-axis acceleroometer voltage
-float zacc_voltage_sum = 0;//z-axis accelerometer voltage
-float xacc_voltage_sum = 0;//x-axis accelerometer voltage
-float x_sum = 0;//sum of x-gyro readings used after calibration to reduce noise within the ACS(); function.
-float y_sum = 0;//;//sum of y-gyro readings used after calibration to reduce noise within the ACS(); function.
+float a = 0.5;                  // gain of control law
+float k = 0.1;                  // threshold for control law (deadband) #maybe this is a bit too low, might require some changes !!!
+float XGyro0V;                  //variable to store the x -axis gyro's 0 (no rotation) voltage
+float YGyro0V;                  //variable to store the y-axis gyro's 0 (no rotation) voltage
+float xRate = 0;                //initialise x-axis gyro rate
+float yRate = 0;                //initialise y-axis gyro rate
+unsigned long TimeACS = 0;      //Variable used to record the start time of each ACS(); loop
+unsigned long  CalibrationTime = 40000; //Time used to zero the gyro
+unsigned long acquisitions_count = 0;   //Variable used to record the number of cycles used for ACS calibration
+float x_voltage_sum = 0;        //x gyro voltage
+float y_voltage_sum = 0;        //y gyro voltage
+float yacc_voltage_sum = 0;     //y-axis acceleroometer voltage
+float zacc_voltage_sum = 0;     //z-axis accelerometer voltage
+float xacc_voltage_sum = 0;     //x-axis accelerometer voltage
+float x_sum = 0;                //sum of x-gyro readings used after calibration to reduce noise within the ACS(); function.
+float y_sum = 0;                //sum of y-gyro readings used after calibration to reduce noise within the ACS(); function.
 const unsigned long Time_Interval = 25; //Time in milliseconds between each adjustment of the ACS system
-bool Cycle = false; //Tracking variable to record if ACS system is mid cycle
-bool wasOXon = false; //Variable to track if control law can be activated based on whether OX caommand has been given or not.
+bool Cycle = false;             //Tracking variable to record if ACS system is mid cycle
+bool wasOXon = false;           //Variable to track if control law can be activated based on whether OX caommand has been given or not.
 unsigned long sampling_count = 0;//used within ACS function in conjunction with z_sum and y_sum. records the no. of readings taken to reduce noise.
-unsigned long TimeZG = 0; //Variable to record the start time of zeroing the gyros
-bool ACSActive = false; //Tracking variable to detect if ACS subsystem is active
-bool Calibrated = false; //Tracking variable to record if ACS system has been calibrated
-float accSensitivity = 0.8;//accelerometer sensitivity
+unsigned long TimeZG = 0;       //Variable to record the start time of zeroing the gyros
+bool ACSActive = false;         //Tracking variable to detect if ACS subsystem is active
+bool Calibrated = false;        //Tracking variable to record if ACS system has been calibrated
+float accSensitivity = 0.8;     //accelerometer sensitivity
 float acc_angleinradians_x;
 float acc_angleinradians_y;
-float cffvector_gyro = 0.90; //complementary filter- choose what percentage of gyro angle you want in the final angle.
-float cffvector_acc = 0.10; //complementary filter- choose what percentage of accelerometer angle you want in the final angle.
-int maxAngle = 15; // this angle will trigger MECO
+float cffvector_gyro = 0.90;    //complementary filter- choose what percentage of gyro angle you want in the final angle.
+float cffvector_acc = 0.10;     //complementary filter- choose what percentage of accelerometer angle you want in the final angle.
+int maxAngle = 15;              // this angle will trigger MECO
 /*
  * Flight configuration
  */
@@ -163,30 +163,26 @@ int pressStatus = STATUS_OFF;
  * Data that will be sent to the PC for telemetry purposes
  */
 double currentPressure = 0;
-float currentangle_x = 0; //current angle after applying complementary filtering in the x axis.
-float currentangle_y = 0; //current angle after applying complementary filtering in the y axis.
-float acc_angle_x = 0;//accelerometer xaxis angle
-float acc_angle_y = 0;//accelerometer y-axis angle
-float yAngle = 0;//initialise y axis gyro angle
-float xAngle = 0;//initialise z axis gyro angle
+float currentangle_x = 0;   //current angle after applying complementary filtering in the x axis.
+float currentangle_y = 0;   //current angle after applying complementary filtering in the y axis.
+float acc_angle_x = 0;      //accelerometer xaxis angle
+float acc_angle_y = 0;      //accelerometer y-axis angle
+float yAngle = 0;           //initialise y axis gyro angle
+float xAngle = 0;           //initialise z axis gyro angle
 unsigned int rssi_pc = 0;
 unsigned int rssi_remote = 0;
 
 
-
-// Variables used for ventpressure
-float PTVoltage = 0; //Variable used to store the voltage output from the pressure transducer
-
 // Variables used for oxblip
-unsigned long Timepulse = 0; //Variable used to record the start time of an ox blip
-bool oxpulse = false; //Tracking variable used to record if oxpulse has been started
+unsigned long Timepulse = 0;    //Variable used to record the start time of an ox blip
+bool oxpulse = false;           //Tracking variable used to record if oxpulse has been started
 
 // Variables for MECO control
-unsigned long mecoStart = 0;//start time of meco
-bool wasMECO = false;//check if meco was on or off
+unsigned long mecoStart = 0;    //start time of meco
+bool wasMECO = false;           //check if meco was on or off
 
 // Variables for LOS control
-unsigned long flightStart = 0;//variable to store flight time
+unsigned long flightStart = 0;  //variable to store flight time
 
 // Variables for Start
 int startStatus = STATUS_OFF;
@@ -209,15 +205,15 @@ void setup() {
   Serial.begin(9600);
   Serial.println("Starting serial process...");
   pinMode(PRES_TRANS_PIN, INPUT); //Define Pressure Transducer reading as an INPUT
-  pinMode(GYRO_PIN_X, INPUT);//reads gyro input
+  pinMode(GYRO_PIN_X, INPUT);     //reads gyro input
   pinMode(GYRO_PIN_Y, INPUT);
   pinMode(ACT_PIN_X_POS, OUTPUT);
   pinMode(ACT_PIN_X_NEG, OUTPUT);
   pinMode(ACT_PIN_Y_POS, OUTPUT);
   pinMode(ACT_PIN_Y_NEG, OUTPUT);
-  pinMode(SOL_PIN_VENT, OUTPUT); //Define signal to Vent control as an OUTPUT
-  pinMode(SOL_PIN_PRES, OUTPUT); //Define signal to Pressure control as an OUTPUT
-  pinMode(SOL_PIN_OX, OUTPUT); //Define signal to OX control as an OUTPUT
+  pinMode(SOL_PIN_VENT, OUTPUT);  //Define signal to Vent control as an OUTPUT
+  pinMode(SOL_PIN_PRES, OUTPUT);  //Define signal to Pressure control as an OUTPUT
+  pinMode(SOL_PIN_OX, OUTPUT);    //Define signal to OX control as an OUTPUT
   pinMode(startPin, INPUT);
   pinMode(mecoPin, INPUT);
   pinMode(throttlePin, INPUT);
@@ -319,8 +315,7 @@ void disarm() {
   ACTventstatus = STATUS_ON;
   ventStatus = STATUS_ON;
   Calibrated = false; // Reset the calibration tracking variable
-  PTVoltage = analogRead(PRES_TRANS_PIN); // Read the voltage from the pressure transducer
-  currentPressure = ((PTVoltage * 39) / 1023) + 1; // Calculate pressure in system in bar (abs)
+  currentPressure = getPressure();
   digitalWrite(SOL_PIN_PRES, VALVE_CLOSE);
   digitalWrite(SOL_PIN_OX, VALVE_CLOSE);
   digitalWrite(SOL_PIN_VENT, VALVE_OPEN);
@@ -367,8 +362,7 @@ void meco_high() {
   throttleValue = 0;
 
   Calibrated = false; //Reset Calibrated variable to ensure ACS systm recalibrates when system restarts
-  PTVoltage = analogRead(PRES_TRANS_PIN); //Read the voltage from the pressure transducer
-  currentPressure = ((PTVoltage * 39) / 1023) + 1; //Calculate pressure in system in bar (abs)
+  currentPressure = getPressure();
   digitalWrite(SOL_PIN_OX, VALVE_CLOSE);
   digitalWrite(SOL_PIN_PRES, VALVE_CLOSE);
   digitalWrite(SOL_PIN_VENT, VALVE_OPEN);
@@ -403,13 +397,13 @@ void ACS_Check()
     Calibrated = false;
     y_voltage_sum = 0;
     x_voltage_sum = 0;
-    yacc_voltage_sum = 0;//y-axis acceleroometer voltage
-    zacc_voltage_sum = 0;//z-axis accelerometer voltage
-    xacc_voltage_sum = 0;//x-axis accelerometer voltage
+    yacc_voltage_sum = 0;   //y-axis accelerometer voltage
+    zacc_voltage_sum = 0;   //z-axis accelerometer voltage
+    xacc_voltage_sum = 0;   //x-axis accelerometer voltage
     acquisitions_count = 0;
-    ACSActive = true;//indiicate acs is active
-    TimeZG = millis();//start zeroing time
-    ACS_Calibration(); // Calibrate ACS+sensors
+    ACSActive = true;       //indiicate acs is active
+    TimeZG = millis();      //start zeroing time
+    ACS_Calibration();      // Calibrate ACS+sensors
     Serial.print(" Checking, Timezg = ");
     Serial.println(TimeZG);
   }
@@ -423,21 +417,21 @@ void ACS_check() {
       Calibrated = false;
       y_voltage_sum = 0;
       x_voltage_sum = 0;
-      yacc_voltage_sum = 0;//y-axis acceleroometer voltage
-      zacc_voltage_sum = 0;//z-axis accelerometer voltage
-      xacc_voltage_sum = 0;//x-axis accelerometer voltage
+      yacc_voltage_sum = 0;   //y-axis acceleroometer voltage
+      zacc_voltage_sum = 0;   //z-axis accelerometer voltage
+      xacc_voltage_sum = 0;   //x-axis accelerometer voltage
       acquisitions_count = 0;
-      ACSActive = true;//indiicate acs is active
-      TimeZG = millis();//start zeroing time
-      ACS_Calibration();
-    }//start calibration function
+      ACSActive = true;       //indiicate acs is active
+      TimeZG = millis();      //start zeroing time
+      ACS_Calibration();      //start calibration function
+    }
     else {
       if (Calibrated == false) { //until calibration time is over, keep calibrating
         ACS_Calibration();
       }
 
       else if (Calibrated == true) {
-        ACS();//start the main ACS function after calibration is complete
+        ACS();  //start the main ACS function after calibration is complete
       }
     }
   }
@@ -446,23 +440,23 @@ void ACS_check() {
   else if (ACTtestcommand == true) { //if ACTtestcommand signal is high
     int i;
     ACSstatus = STATUS_TEST;
-    for (i = 0; i < 1; i++) { //run just once
-      digitalWrite(ACT_PIN_X_POS, VALVE_OPEN);
-      digitalWrite(ACT_PIN_X_NEG, VALVE_OPEN);
-      delay(15);
-      digitalWrite(ACT_PIN_X_POS, VALVE_CLOSE);
-      digitalWrite(ACT_PIN_X_NEG, VALVE_CLOSE);
-      digitalWrite(ACT_PIN_Y_POS, VALVE_OPEN);
-      digitalWrite(ACT_PIN_Y_NEG, VALVE_OPEN);
-      delay(15);
-      digitalWrite(ACT_PIN_Y_POS, VALVE_CLOSE);
-      digitalWrite(ACT_PIN_Y_NEG, VALVE_CLOSE);
-    }
+
+    digitalWrite(ACT_PIN_X_POS, VALVE_OPEN);
+    digitalWrite(ACT_PIN_X_NEG, VALVE_OPEN);
+    delay(15);
+    digitalWrite(ACT_PIN_X_POS, VALVE_CLOSE);
+    digitalWrite(ACT_PIN_X_NEG, VALVE_CLOSE);
+    digitalWrite(ACT_PIN_Y_POS, VALVE_OPEN);
+    digitalWrite(ACT_PIN_Y_NEG, VALVE_OPEN);
+    delay(15);
+    digitalWrite(ACT_PIN_Y_POS, VALVE_CLOSE);
+    digitalWrite(ACT_PIN_Y_NEG, VALVE_CLOSE);
+    
     ACTtestcommand = false;
   }
-  else if (ACTventcommand == true) { //when ACTventcommand signal is high
+  else if (ACTventcommand == true) { // when ACTventcommand signal is high
     ACTventstatus = STATUS_ON; 
-    //open all valves
+    // open all valves
     digitalWrite(ACT_PIN_X_POS, VALVE_OPEN);
     digitalWrite(ACT_PIN_X_NEG, VALVE_OPEN);
     digitalWrite(ACT_PIN_Y_POS, VALVE_OPEN);
@@ -472,12 +466,12 @@ void ACS_check() {
   else {
     ACSstatus = STATUS_OFF;
     ACTventstatus = STATUS_OFF;
-    //close all valves
+    // close all valves
     digitalWrite(ACT_PIN_X_POS, VALVE_CLOSE);
     digitalWrite(ACT_PIN_X_NEG, VALVE_CLOSE);
     digitalWrite(ACT_PIN_Y_POS, VALVE_CLOSE);
     digitalWrite(ACT_PIN_Y_NEG, VALVE_CLOSE);
-    ACSActive = false;//restart calibration process in next run
+    ACSActive = false;  // restart calibration process in next run
 
   }
 
@@ -498,11 +492,11 @@ void ACS_Calibration() {
       XGyro0V = (x_voltage_sum * Vcc) / (acquisitions_count * 1023.00); // Calculate the zero rate voltage for the Z axis gyro
       x_accZeroVoltage = (xacc_voltage_sum * Vcc) / (acquisitions_count * 1023);
       y_accZeroVoltage = (yacc_voltage_sum * Vcc) / (acquisitions_count * 1023);
-      Calibrated = true;// Record calibration has finished
+      Calibrated = true;      // Record calibration has finished
       x_voltage_sum = 0;
       y_voltage_sum = 0;
       xacc_voltage_sum = 0;
-      yacc_voltage_sum = 0; // Reset variable ready for next task
+      yacc_voltage_sum = 0;   // Reset variable ready for next task
       acquisitions_count = 0; // Reset the counter
 
     }
@@ -512,7 +506,7 @@ void ACS_Calibration() {
 void ACS() {
   if (Cycle == false) { // If cycle starting for first time or has just finished
     TimeACS = millis(); // Record the start time of the cycle
-    Cycle = true; // Record the cycle is starting
+    Cycle = true;       // Record the cycle is starting
   }
 
   else if (TimeACS + Time_Interval < millis()) { // If time interval has passed
@@ -532,14 +526,14 @@ void ACS() {
     float z_g = ((analogRead(ACCEL_PIN_Z) * Vcc / 1023.00) - z_accZeroVoltage) / accSensitivity;
 
 
-    float c_g = sqrt(sq(y_g) + sq(z_g)); //calculate the gravity using y and z axis
-    float d_g = sqrt(sq(x_g) + sq(z_g)); // same as above using x and y axis
+    float c_g = sqrt(sq(y_g) + sq(z_g));  //calculate the gravity using y and z axis
+    float d_g = sqrt(sq(x_g) + sq(z_g));  // same as above using x and y axis
     acc_angleinradians_x = -atan2 (x_g, c_g);
     acc_angleinradians_y = -atan2 (y_g, d_g);
-    acc_angle_x = acc_angleinradians_x * 180 / M_PI; //get x-angle from accelerometer in degrees
-    acc_angle_y = acc_angleinradians_y * 180 / M_PI; //get y-angle from accelerometer in degrees
-    yAngle = yRate * (millis() - TimeACS + 15.00) * 0.001; //get y angle from y-axis gyro
-    xAngle = xRate * (millis() - TimeACS + 15.00) * 0.001; //get x angle from x-axis gyro
+    acc_angle_x = acc_angleinradians_x * 180 / M_PI;  //get x-angle from accelerometer in degrees
+    acc_angle_y = acc_angleinradians_y * 180 / M_PI;  //get y-angle from accelerometer in degrees
+    yAngle = yRate * (millis() - TimeACS + 15.00) * 0.001;  //get y angle from y-axis gyro
+    xAngle = xRate * (millis() - TimeACS + 15.00) * 0.001;  //get x angle from x-axis gyro
     currentangle_x = cffvector_gyro * (xAngle) + cffvector_acc * acc_angle_x; //apply complementary filtering in z axis
     currentangle_y = cffvector_gyro * (yAngle) + cffvector_acc * acc_angle_y; //apply complementary filtering in y axis
 
@@ -585,7 +579,7 @@ void ACS() {
         }
       }
 
-      Cycle = false;//reset cycle to false
+      Cycle = false;  // reset cycle to false
 
       x_sum = 0; // Reset variable for next loop
       y_sum = 0;
@@ -634,8 +628,7 @@ void ACS() {
 /* 29/10/16, Jack Tyler: There seems to be ox_pulse() and ox_Pulse() -- the one below seems to be the main function, but this needs to be verified. */
 
 void ox_Pulse() {
-  PTVoltage = analogRead(PRES_TRANS_PIN); // Read the voltage from the pressure transducer
-  currentPressure = ((PTVoltage / 1023 * 39) + 1)  ; // Calculate pressure in system in bar (abs)
+  currentPressure = getPressure();
 
   Pressurisation();
 
@@ -670,8 +663,7 @@ void ox_Pulse() {
 //  */
 // void pressurization() {
 
-//   PTVoltage = analogRead(PRES_TRANS_PIN); // Read the voltage from the pressure transducer
-//   currentPressure = ((PTVoltage / 1023 * 8) + 1)  ; // Calculate pressure in system in bar (abs)
+//   currentPressure = getPressure();
 
 //   if (ventCommand == true) { // If vent signal is high
 //     digitalWrite(SOL_PIN_VENT, VALVE_OPEN);
@@ -714,8 +706,7 @@ void ox_Pulse() {
 
 void Pressurisation() {
 
-  PTVoltage = analogRead(PRES_TRANS_PIN); // Read the voltage from the pressure transducer
-  currentPressure = ((PTVoltage / 1023 * 39) + 1)  ; // Calculate pressure in system in bar (abs)
+  currentPressure = getPressure();
 
   Serial.print("Current pressure = ");
   Serial.print(currentPressure);
@@ -764,8 +755,7 @@ void thruster() {
 
 void throttle()
 {
-  PTVoltage = analogRead(PRES_TRANS_PIN); // Read the voltage from the pressure transducer
-  currentPressure = ((PTVoltage / 1023 * 39) + 1)  ; // Calculate pressure in system in bar (abs)
+  currentPressure = getPressure();
 
   throttlePressure = ((analogRead(throttlePin) / 1023 * 21 )) + 19;
   Serial.print("Throttle pressure = ");
@@ -798,4 +788,9 @@ void throttle()
   }
 
   Serial.println("");
+}
+
+double getPressure(){
+  int voltage = analogRead(PRES_TRANS_PIN);
+  return voltage * (40 / 1023); //int * (bar/int) returns: bar
 }
