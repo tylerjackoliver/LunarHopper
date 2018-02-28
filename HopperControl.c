@@ -307,11 +307,8 @@ void disarm() {
   pressStatus = STATUS_OFF;
   oxStatus = STATUS_OFF;
   ACSstatus = STATUS_OFF;
- // following two vent statuses were previously 0, but commented as ON.
- // 0 being ON conflicted with all other cases. Trend was 0->OFF 1->ON.
- // left as OFF (0) for separate commit.
-  ACTventstatus = STATUS_OFF;
-  ventStatus = STATUS_OFF;
+  ACTventstatus = STATUS_ON;
+  ventStatus = STATUS_ON;
   Calibrated = false; // Reset the calibration tracking variable
   PTVoltage = analogRead(PRES_TRANS_PIN); // Read the voltage from the pressure transducer
   currentPressure = ((PTVoltage * 39) / 1023) + 1; // Calculate pressure in system in bar (abs)
