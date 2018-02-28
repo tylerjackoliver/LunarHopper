@@ -4,7 +4,10 @@ Lunar Hopper Control System Code
 
 Written by: Marian Daogaru, mn2g12
 
-Updated by: Jack Tyler, jt6g15, Duncan Hamill, dh2g15, Boateng Opoku-Yeboah, boy1g15
+Updated by: Jack Tyler            jt6g15
+            Duncan Hamill         dh2g15
+            Boateng Opoku-Yeboah  boy1g15
+            Shane Lawson          sdl1n17
 
 ---------------------------------
 */
@@ -320,11 +323,13 @@ void disarm() {
   currentPressure = ((PTVoltage * 39) / 1023) + 1; // Calculate pressure in system in bar (abs)
   digitalWrite(SOL_PIN_PRES, VALVE_CLOSE);
   digitalWrite(SOL_PIN_OX, VALVE_CLOSE);
-  digitalWrite(SOL_PIN_VENT, VALVE_CLOSE); // Open the VENT solenoid
-  digitalWrite(ACT_PIN_X_POS, VALVE_CLOSE);
-  digitalWrite(ACT_PIN_X_NEG, VALVE_CLOSE);
-  digitalWrite(ACT_PIN_Y_POS, VALVE_CLOSE);
-  digitalWrite(ACT_PIN_Y_NEG, VALVE_CLOSE);
+  digitalWrite(SOL_PIN_VENT, VALVE_OPEN);
+  // !!! for the next four, need risk analysis/consideration here. 
+  // !!! Going based on my interpretation of what the (conflicting) status above was saying.
+  digitalWrite(ACT_PIN_X_POS, VALVE_OPEN); 
+  digitalWrite(ACT_PIN_X_NEG, VALVE_OPEN);
+  digitalWrite(ACT_PIN_Y_POS, VALVE_OPEN);
+  digitalWrite(ACT_PIN_Y_NEG, VALVE_OPEN);
   if (mecoCommand == true) { // If MECO has been activated
     mecoStatus = STATUS_ON;
   } else { // If MECO is inactive
