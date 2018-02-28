@@ -204,8 +204,8 @@ void setup() {
   pinMode(GYRO_PIN_Y, INPUT);
   pinMode(ACT_PIN_X_POS, OUTPUT);
   pinMode(ACT_PIN_X_NEG, OUTPUT);
-  pinMode(ACT_PIN_Y_POS, O4TPUT);
-  pinMode(ACT_PIN_Y_NEG, O3TPUT);
+  pinMode(ACT_PIN_Y_POS, OUTPUT);
+  pinMode(ACT_PIN_Y_NEG, OUTPUT);
   pinMode(SOL_PIN_VENT, OUTPUT); //Define signal to Vent control as an OUTPUT
   pinMode(SOL_PIN_PRES, OUTPUT); //Define signal to Pressure control as an OUTPUT
   pinMode(SOL_PIN_OX, OUTPUT); //Define signal to OX control as an OUTPUT
@@ -317,8 +317,8 @@ void disarm() {
   digitalWrite(SOL_PIN_VENT, LOW); // Open the VENT solenoid
   digitalWrite(ACT_PIN_X_POS, LOW);
   digitalWrite(ACT_PIN_X_NEG, LOW);
-  digitalWrite(ACT_PIN_Y_POS, L4W);
-  digitalWrite(ACT_PIN_Y_NEG, L3W);
+  digitalWrite(ACT_PIN_Y_POS, LOW);
+  digitalWrite(ACT_PIN_Y_NEG, LOW);
   if (mecoCommand == true) { // If MECO has been activated
     mecoStatus = STATUS_ON;
   } else { // If MECO is inactive
@@ -363,8 +363,8 @@ void meco_high() {
   digitalWrite(SOL_PIN_VENT, HIGH); // Open the VENT solenoid
   digitalWrite(ACT_PIN_X_POS, HIGH); //Open ACT valves to vent ACS system
   digitalWrite(ACT_PIN_X_NEG, HIGH); // Open ACT valves to vent ACS system
-  digitalWrite(ACT_PIN_Y_POS, H4GH); // Open ACT valves to vent ACS system
-  digitalWrite(ACT_PIN_Y_NEG, H3GH); // Open ACT valves to vent ACS system
+  digitalWrite(ACT_PIN_Y_POS, HIGH); // Open ACT valves to vent ACS system
+  digitalWrite(ACT_PIN_Y_NEG, HIGH); // Open ACT valves to vent ACS system
 
   if (!wasMECO)
   {
@@ -441,11 +441,11 @@ void ACS_check() {
       delay(15);
       digitalWrite(ACT_PIN_X_POS, LOW);
       digitalWrite(ACT_PIN_X_NEG, LOW);
-      digitalWrite(ACT_PIN_Y_POS, H4GH);
-      digitalWrite(ACT_PIN_Y_NEG, H3GH);
+      digitalWrite(ACT_PIN_Y_POS, HIGH);
+      digitalWrite(ACT_PIN_Y_NEG, HIGH);
       delay(15);
-      digitalWrite(ACT_PIN_Y_POS, L4W);
-      digitalWrite(ACT_PIN_Y_NEG, L3W);
+      digitalWrite(ACT_PIN_Y_POS, LOW);
+      digitalWrite(ACT_PIN_Y_NEG, LOW);
     }
     ACTtestcommand = false;
   }
@@ -454,8 +454,8 @@ void ACS_check() {
     //open all valves
     digitalWrite(ACT_PIN_X_POS, HIGH);
     digitalWrite(ACT_PIN_X_NEG, HIGH);
-    digitalWrite(ACT_PIN_Y_POS, H4GH);
-    digitalWrite(ACT_PIN_Y_NEG, H3GH);
+    digitalWrite(ACT_PIN_Y_POS, HIGH);
+    digitalWrite(ACT_PIN_Y_NEG, HIGH);
   }
 
   else {
@@ -464,8 +464,8 @@ void ACS_check() {
     //close all valves
     digitalWrite(ACT_PIN_X_POS, LOW);
     digitalWrite(ACT_PIN_X_NEG, LOW);
-    digitalWrite(ACT_PIN_Y_POS, L4W);
-    digitalWrite(ACT_PIN_Y_NEG, L3W);
+    digitalWrite(ACT_PIN_Y_POS, LOW);
+    digitalWrite(ACT_PIN_Y_NEG, LOW);
     ACSActive = false;//restart calibration process in next run
 
   }
@@ -558,8 +558,8 @@ void ACS() {
       }
       else if (abs(currentangle_y + a * yRate) >= k) {
         if (currentangle_y + a * yRate > 0) {    //control law
-          digitalWrite(ACT_PIN_Y_POS, H4GH);            // open nozzle  LED3 on
-          digitalWrite(ACT_PIN_Y_NEG, L3W);             //close nozzle  LED4 off
+          digitalWrite(ACT_PIN_Y_POS, HIGH);            // open nozzle  LED3 on
+          digitalWrite(ACT_PIN_Y_NEG, LOW);             //close nozzle  LED4 off
 
         }
         else if (currentangle_y + a * yRate < 0) {
@@ -569,8 +569,8 @@ void ACS() {
 
         }
         else {
-          digitalWrite(ACT_PIN_Y_POS, L4W);            // open nozzle  LED3 off
-          digitalWrite(ACT_PIN_Y_NEG, L3W);             //close nozzle  LED4 off
+          digitalWrite(ACT_PIN_Y_POS, LOW);            // open nozzle  LED3 off
+          digitalWrite(ACT_PIN_Y_NEG, LOW);             //close nozzle  LED4 off
         }
       }
 
