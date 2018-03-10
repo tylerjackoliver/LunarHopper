@@ -38,7 +38,7 @@ Message::Message()
    contentLength = MAX_CONTENT_BYTES;
 
    frameIDBytes[0] = 0x10;
-   frameIDBytes[1] = 0x01;
+   frameIDBytes[1] = 0x00; //turn off response from receiver. Use this later for confirmation of packet sent, but ease of bidirectional comms, handling a single case is easier.
    address16[0] = 0xFF;
    address16[1] = 0xFE;
    other[0] = 0x00;
@@ -59,6 +59,7 @@ void Message::setContent(const char *contentIn, int length)
 
 void Message::sendTo(const Address64 address) 
 {
+   Serial.print("Sending message...");
    this->calcChecksumAndLength(address);
 
    this->sendByte(START_DELIMETER);
@@ -78,6 +79,7 @@ void Message::sendTo(const Address64 address)
       this->sendByte(content[i]);
    }
    this->sendByte(checksum);
+   Serial.println("Done!");
 }
 
 void Message::calcChecksumAndLength(const Address64 address)
@@ -113,13 +115,6 @@ void Message::calcChecksumAndLength(const Address64 address)
    checksum = 0xFF - sum;
    lengthBytes[0] = 0x00;
    lengthBytes[1] = bytes;
-   Serial.print("Length: ");
-   Serial.print(bytes);
-   Serial.print("Calculated checksum: ");
-   Serial.print(checksum, HEX);
-   Serial.print("\t sum: ");
-   Serial.print(sum);
-   Serial.print("\r\n");
 }
 
 void Message::sendByte(char input)
@@ -131,10 +126,8 @@ void Message::sendByte(char input)
             if (bytesTransmitted != 0) 
             {
                Serial1.write(0x7D);
-               Serial.write(0x7D);
                bytesTransmitted++;
                Serial1.write(0x5E);
-               Serial.write(0x5E);
             }else{
                Serial1.write(input);
             }
@@ -142,31 +135,24 @@ void Message::sendByte(char input)
 
          case 0x7D:
             Serial1.write(0x7D);
-            Serial.write(0x7D);
             bytesTransmitted++;
             Serial1.write(0x5D);
-            Serial.write(0x5D);
             break;
 
          case 0x11:
             Serial1.write(0x7D);
-            Serial.write(0x7D);
             bytesTransmitted++;
             Serial1.write(0x31);
-            Serial.write(0x31);
             break;
 
          case 0x13:
             Serial1.write(0x7D);
-            Serial.write(0x7D);
             bytesTransmitted++;
             Serial1.write(0x33);
-            Serial.write(0x33);
             break;
 
          default:          
          Serial1.write(input);
-         Serial.write(input);
       }
       bytesTransmitted++;
    }
