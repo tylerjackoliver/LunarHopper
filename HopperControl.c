@@ -41,9 +41,9 @@ const int SOL_PIN_OX = 11;      //Output to OX solenoid control(SV3)
 /*Gyro + Accelerometer setup*/
 const float Vcc = 5.0;                 //Gyro is running at 5V from Arduino
 const float GYRO_SENSITIVITY = 0.04;   //gyro xensitivity at 40mV/deg/s
-const float ACCEL_ZERO_VOLT_Z = 1.775; //accelerometer z axis 0 voltage
-const float ACCEL_ZERO_VOLT_X = 0;     //accelerometer x axis 0 voltage
-const float ACCEL_ZERO_VOLT_Y = 0;     //accelerometer y axis 0 voltage
+float accelZeroVoltZ = 1.775;          //accelerometer z axis 0 voltage
+float accelZeroVoltX = 0;              //accelerometer x axis 0 voltage
+float accelZeroVoltY = 0;              //accelerometer y axis 0 voltage
 
 /*ACS configuration*/
 const float a = 0.5;                  // gain of control law
@@ -496,8 +496,8 @@ void ACS_Calibration() {
 
       YGyro0V = (y_voltage_sum * Vcc) / (acquisitions_count * 1023.00); //Calculate zero rate voltage for y gro
       XGyro0V = (x_voltage_sum * Vcc) / (acquisitions_count * 1023.00); // Calculate the zero rate voltage for the Z axis gyro
-      ACCEL_ZERO_VOLT_X = (xacc_voltage_sum * Vcc) / (acquisitions_count * 1023);
-      ACCEL_ZERO_VOLT_Y = (yacc_voltage_sum * Vcc) / (acquisitions_count * 1023);
+      accelZeroVoltX = (xacc_voltage_sum * Vcc) / (acquisitions_count * 1023);
+      accelZeroVoltY = (yacc_voltage_sum * Vcc) / (acquisitions_count * 1023);
       calibrated = true;      // Record calibration has finished
       x_voltage_sum = 0;
       y_voltage_sum = 0;
@@ -527,12 +527,12 @@ void ACS() {
       sampling_count++; // Increment the counter
     }
     // Calculate angular rates and integrate for angles
-    xRate = ( (x_sum * Vcc) / (sampling_count * 1023.) - XGyro0V) / gyroSensitivity * (1.0); // Calculate if any movement has occured in the X axis and correct angle (change sign due to how the gyro is mounted on the frame)
-    yRate = ( (y_sum * Vcc) / (sampling_count * 1023.) - YGyro0V) / gyroSensitivity * (1.0); //same for y axis
+    xRate = ( (x_sum * Vcc) / (sampling_count * 1023.) - XGyro0V) / GYRO_SENSITIVITY * (1.0); // Calculate if any movement has occured in the X axis and correct angle (change sign due to how the gyro is mounted on the frame)
+    yRate = ( (y_sum * Vcc) / (sampling_count * 1023.) - YGyro0V) / GYRO_SENSITIVITY * (1.0); //same for y axis
 
-    float x_g = ((analogRead(ACCEL_PIN_X) * Vcc / 1023.00) - ACCEL_ZERO_VOLT_X) / ACCEL_SENSITIVITY;
-    float y_g = ((analogRead(ACCEL_PIN_Y) * Vcc / 1023.00) - ACCEL_ZERO_VOLT_Y) / ACCEL_SENSITIVITY;
-    float z_g = ((analogRead(ACCEL_PIN_Z) * Vcc / 1023.00) - ACCEL_ZERO_VOLT_Z) / ACCEL_SENSITIVITY;
+    float x_g = ((analogRead(ACCEL_PIN_X) * Vcc / 1023.00) - accelZeroVoltX) / ACCEL_SENSITIVITY;
+    float y_g = ((analogRead(ACCEL_PIN_Y) * Vcc / 1023.00) - accelZeroVoltY) / ACCEL_SENSITIVITY;
+    float z_g = ((analogRead(ACCEL_PIN_Z) * Vcc / 1023.00) - accelZeroVoltZ) / ACCEL_SENSITIVITY;
 
 
     float c_g = sqrt(sq(y_g) + sq(z_g));  //calculate the gravity using y and z axis
