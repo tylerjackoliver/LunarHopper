@@ -12,6 +12,13 @@ Updated by: Jack Tyler            jt6g15
 ---------------------------------
 */
 
+// includes for the mpu
+#include <I2Cdev.h>
+#include <MPU6050.h>
+
+#if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
+#include "Wire.h"
+#endif
 
 /*
  * PIN NUMBERS
@@ -23,11 +30,7 @@ const int VALVE_CLOSE = LOW;
 
 //Sensors (INPUTS)
 const int PRES_TRANS_PIN = A4;  //Input from Pressure Transducer [ANALOG]
-const int GYRO_PIN_X = A0;      //x-axis Gyro is connected to analog pin
-const int GYRO_PIN_Y = A5;      //y-axis gyro
-const int ACCEL_PIN_X = A1;     //x-axis accelerometer pin
-const int ACCEL_PIN_Y = A2;     //y-axis accelerometer pin
-const int ACCEL_PIN_Z = A3;     //z-axis accelerometer pin
+MPU6050 mpu;                    //MPU is connected to the Arduino through the I2C bus (pins 20 and 21 on Mega)
 
 // Actuators (OUTPUTS)
 const int ACT_PIN_X_POS = 6;    //ACS valve positive x_axis
@@ -40,16 +43,17 @@ const int SOL_PIN_OX = 11;      //Output to OX solenoid control(SV3)
 
 /*Gyro + Accelerometer setup*/
 const float Vcc = 5.0;                 //Gyro is running at 5V from Arduino
-const float GYRO_SENSITIVITY = 0.04;   //gyro xensitivity at 40mV/deg/s
-float accelZeroVoltZ = 1.775;          //accelerometer z axis 0 voltage
-float accelZeroVoltX = 0;              //accelerometer x axis 0 voltage
-float accelZeroVoltY = 0;              //accelerometer y axis 0 voltage
+const float GYRO_SENSITIVITY = (float) 1/131;   //gyro sensitivity = 1/131 which is a constant derived from what the FS range set in initialize() is. +/- 250 deg/s, which is the same as 131 bit/deg/s, so for simple multiplication scaling of read value, needs to be 1/131
+const float ACCEL_SENSITIVITY = (float) 1/8192; //accelerometer sensitivity 1/8192 which is a constant derived from what the FS range set in initialize() is. +/- 2g, which is the same as 8192 LSB/mg, so for simple multiplication scaling of read value, needs to be 1/8192
+float accelZOffset = 0;            //accelerometer z axis initial steady state value (calculated in ACS_Calibration)
+float accelXOffset = 0;            //accelerometer x axis initial steady state value (calculated in ACS_Calibration)
+float accelYOffset = 0;            //accelerometer y axis initial steady state value (calculated in ACS_Calibration)
 
 /*ACS configuration*/
 const float a = 0.5;                  // gain of control law
 const float k = 0.1;                  // threshold for control law (deadband) #maybe this is a bit too low, might require some changes !!
-float XGyro0V;                  //variable to store the x -axis gyro's 0 (no rotation) voltage
-float YGyro0V;                  //variable to store the y-axis gyro's 0 (no rotation) voltage
+float gyroXOffset;                  //gyro x axis initial steady state value (calculated in ACS_Calibration)
+float gyroYOffset;                  //gyro x axis initial steady state value (calculated in ACS_Calibration)
 // !!! I think I'll move this into ACS as a local variable... later 
 float xRate = 0;                //initialise x-axis gyro rate
 float yRate = 0;                //initialise y-axis gyro rate
@@ -70,7 +74,6 @@ bool wasOXon = false;           //Variable to track if control law can be activa
 unsigned long TimeZG = 0;       //Variable to record the start time of zeroing the gyros
 bool ACSActive = false;         //Tracking variable to detect if ACS subsystem is active
 bool calibrated = false;        //Tracking variable to record if ACS system has been calibrated
-const float ACCEL_SENSITIVITY = 0.8;   //accelerometer sensitivity
 const float CFF_VECTOR_GYRO = 0.90;    //complementary filter- choose what percentage of gyro angle you want in the final angle.
 const float CFF_VECTOR_ACCEL = 0.10;   //complementary filter- choose what percentage of accelerometer angle you want in the final angle.
 const int MAX_ANGLE = 15;              // this angle will trigger MECO
@@ -210,8 +213,6 @@ void setup() {
   Serial.begin(9600);
   Serial.println("Starting serial process...");
   pinMode(PRES_TRANS_PIN, INPUT); //Define Pressure Transducer reading as an INPUT
-  pinMode(GYRO_PIN_X, INPUT);     //reads gyro input
-  pinMode(GYRO_PIN_Y, INPUT);
   pinMode(startPin, INPUT);
   pinMode(mecoPin, INPUT);
   pinMode(throttlePin, INPUT);
@@ -222,6 +223,15 @@ void setup() {
   pinMode(SOL_PIN_VENT, OUTPUT);  //Define signal to Vent control as an OUTPUT
   pinMode(SOL_PIN_PRES, OUTPUT);  //Define signal to Pressure control as an OUTPUT
   pinMode(SOL_PIN_OX, OUTPUT);    //Define signal to OX control as an OUTPUT
+
+  //initialize mpu
+  #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
+    Wire.begin();
+  #elif I2CDEV_IMPLEMENTATION == I2CDEV_BUILTIN_FASTWIRE
+    Fastwire::setup(400, true);
+  #endif
+
+  mpu.initialize(); //can call mpu.testConnection() to return a bool if connection to mpu is working
 }
 
 /*
@@ -482,10 +492,10 @@ void ACS_check() {
 void ACS_Calibration() {
   if (TimeZG + CALIBRATION_TIME > millis()) { // If calibration time is not over
 
-    x_voltage_sum += analogRead(GYRO_PIN_X);
-    y_voltage_sum += analogRead(GYRO_PIN_Y);
-    xacc_voltage_sum += analogRead(ACCEL_PIN_X);
-    yacc_voltage_sum += analogRead(ACCEL_PIN_Y);
+    x_voltage_sum += mpu.getRotationX();
+    y_voltage_sum += mpu.getRotationY();
+    xacc_voltage_sum += mpu.getAccelerationX();
+    yacc_voltage_sum += mpu.getAccelerationY();
     acquisitions_count++; // Increment the counter
     Serial.print("Still calibrating at elapsed time: ");
     Serial.println(TimeZG + CALIBRATION_TIME-millis());
@@ -494,10 +504,10 @@ void ACS_Calibration() {
   
     if (calibrated == false) {  // If calibration time has just finished
 
-      YGyro0V = (y_voltage_sum * Vcc) / (acquisitions_count * 1023.00); //Calculate zero rate voltage for y gro
-      XGyro0V = (x_voltage_sum * Vcc) / (acquisitions_count * 1023.00); // Calculate the zero rate voltage for the Z axis gyro
-      accelZeroVoltX = (xacc_voltage_sum * Vcc) / (acquisitions_count * 1023);
-      accelZeroVoltY = (yacc_voltage_sum * Vcc) / (acquisitions_count * 1023);
+      gyroYOffset = y_voltage_sum / acquisitions_count; // Calculate average zero rate value returned from imu for y gyro * Note: all values summed into voltage_sum are ints, but dividing means likely a double that comes out. I believe currently it's doing integer division, so if we want a double, we need to force it
+      gyroXOffset = x_voltage_sum / acquisitions_count; // Calculate average zero rate value returned from imu for x gyro * Note: all values summed into voltage_sum are ints, but dividing means likely a double that comes out. I believe currently it's doing integer division, so if we want a double, we need to force it
+      accelXOffset = xacc_voltage_sum / acquisitions_count;
+      accelYOffset = yacc_voltage_sum / acquisitions_count;
       calibrated = true;      // Record calibration has finished
       x_voltage_sum = 0;
       y_voltage_sum = 0;
@@ -522,17 +532,17 @@ void ACS() {
     float y_sum = 0.0;
     // Get reading ten times-over sampling to reduce noise
     for (int i = 0; i < 10; i++) {
-      y_sum += analogRead(GYRO_PIN_Y);
-      x_sum += analogRead(GYRO_PIN_X); // Add current Z gyro voltage to running total
+      y_sum += mpu.getRotationY();
+      x_sum += mpu.getRotationX(); // Add current x gyro voltage to running total
       sampling_count++; // Increment the counter
     }
     // Calculate angular rates and integrate for angles
-    xRate = ( (x_sum * Vcc) / (sampling_count * 1023.) - XGyro0V) / GYRO_SENSITIVITY * (1.0); // Calculate if any movement has occured in the X axis and correct angle (change sign due to how the gyro is mounted on the frame)
-    yRate = ( (y_sum * Vcc) / (sampling_count * 1023.) - YGyro0V) / GYRO_SENSITIVITY * (1.0); //same for y axis
+    xRate = ((x_sum / sampling_count) - gyroXOffset) * GYRO_SENSITIVITY; // doesn't make sense to me --> Calculate if any movement has occured in the X axis and correct angle (change sign due to how the gyro is mounted on the frame)
+    yRate = ((y_sum / sampling_count) - gyroYOffset) * GYRO_SENSITIVITY; //same for y axis
 
-    float x_g = ((analogRead(ACCEL_PIN_X) * Vcc / 1023.00) - accelZeroVoltX) / ACCEL_SENSITIVITY;
-    float y_g = ((analogRead(ACCEL_PIN_Y) * Vcc / 1023.00) - accelZeroVoltY) / ACCEL_SENSITIVITY;
-    float z_g = ((analogRead(ACCEL_PIN_Z) * Vcc / 1023.00) - accelZeroVoltZ) / ACCEL_SENSITIVITY;
+    float x_g = (mpu.getAccelerationX() - accelXOffset) * ACCEL_SENSITIVITY*1000;
+    float y_g = (mpu.getAccelerationY() - accelYOffset) * ACCEL_SENSITIVITY*1000;
+    float z_g = (mpu.getAccelerationZ() - accelZOffset) * ACCEL_SENSITIVITY*1000;
 
 
     float c_g = sqrt(sq(y_g) + sq(z_g));  //calculate the gravity using y and z axis
