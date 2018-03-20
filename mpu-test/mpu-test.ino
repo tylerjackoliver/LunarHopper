@@ -9,6 +9,11 @@ MPU6050 accelgyro;
 int16_t ax, ay, az;
 int16_t gx, gy, gz;
 
+const int ACT_PIN_X_POS = 6;    //ACS valve positive x_axis
+const int ACT_PIN_X_NEG = 5;    //ACS valve negative x_axis
+const int ACT_PIN_Y_POS = 4;    //ACS valve positive y_axis
+const int ACT_PIN_Y_NEG = 3;    //ACS valve negative y_axis
+
 void setup()
 {
 #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
@@ -30,6 +35,8 @@ void setup()
    {
       Serial.println("Sad day :( connection unsuccessful!");
    }
+
+   intitializeACSPins();
 }
 
 void loop()
@@ -53,4 +60,24 @@ void loop()
    Serial.println(gz);
    delay(500);
 
+}
+
+void intitializeACSPins() {
+   pinMode(ACT_PIN_X_POS, OUTPUT);
+   pinMode(ACT_PIN_X_NEG, OUTPUT);
+   pinMode(ACT_PIN_Y_POS, OUTPUT);
+   pinMode(ACT_PIN_Y_NEG, OUTPUT);
+   String thrusters[] = {"back", "front", "left", "right"};
+
+   Serial.print("Testing thrusters: ");
+
+   for (int i = 3; i < 7; i++)
+   {
+     Serial.print(thrusters[i - 3] + "...");
+     digitalWrite(i, HIGH);
+     delay(200);
+     digitalWrite(i, LOW);
+     delay(200);
+   }
+   Serial.println("Done!");
 }
