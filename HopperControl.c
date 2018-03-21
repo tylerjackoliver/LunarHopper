@@ -42,9 +42,8 @@ const int SOL_PIN_PRES = 10;    //Output to PRESSURE solenoid control (SV1)
 const int SOL_PIN_OX = 11;      //Output to OX solenoid control(SV3)
 
 /*Gyro + Accelerometer setup*/
-const float Vcc = 5.0;                 //Gyro is running at 5V from Arduino
 const float GYRO_SENSITIVITY = (float) 1/131;   //gyro sensitivity = 1/131 which is a constant derived from what the FS range set in initialize() is. +/- 250 deg/s, which is the same as 131 bit/deg/s, so for simple multiplication scaling of read value, needs to be 1/131
-const float ACCEL_SENSITIVITY = (float) 1/8192; //accelerometer sensitivity 1/8192 which is a constant derived from what the FS range set in initialize() is. +/- 2g, which is the same as 8192 LSB/mg, so for simple multiplication scaling of read value, needs to be 1/8192
+const float ACCEL_SENSITIVITY = (float) 1/8192; //accelerometer sensitivity = 1/8192 which is a constant derived from what the FS range set in initialize() is. +/- 2g, which is the same as 8192 LSB/mg, so for simple multiplication scaling of read value, needs to be 1/8192
 float accelZOffset = 0;            //accelerometer z axis initial steady state value (calculated in ACS_Calibration)
 float accelXOffset = 0;            //accelerometer x axis initial steady state value (calculated in ACS_Calibration)
 float accelYOffset = 0;            //accelerometer y axis initial steady state value (calculated in ACS_Calibration)
@@ -60,14 +59,14 @@ float yRate = 0;                //initialise y-axis gyro rate
 unsigned long TimeACS = 0;      //Variable used to record the start time of each ACS(); loop
 // !!!
 const unsigned long  CALIBRATION_TIME = 40000; //Time used to zero the gyro
-// !!! weird declarations of these 6 for use in ACS_check and ACS_calibration, I'll sort this out later
+
 unsigned long acquisitions_count = 0;   //Variable used to record the number of cycles used for ACS calibration
 float x_voltage_sum = 0;        //x gyro voltage
 float y_voltage_sum = 0;        //y gyro voltage
 float yacc_voltage_sum = 0;     //y-axis acceleroometer voltage
 float zacc_voltage_sum = 0;     //z-axis accelerometer voltage
 float xacc_voltage_sum = 0;     //x-axis accelerometer voltage
-// !!!
+
 const unsigned long TIME_INTERVAL = 25; //Time in milliseconds between each adjustment of the ACS system
 bool Cycle = false;             //Tracking variable to record if ACS system is mid cycle
 bool wasOXon = false;           //Variable to track if control law can be activated based on whether OX command has been given or not.
