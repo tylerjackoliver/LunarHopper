@@ -27,6 +27,7 @@ class Recipient {
      void setAddress64(unsigned long, unsigned long);
      void setAddress16(unsigned int);
      void send(Message);
+     void send(unsigned char/*,others*/);
 
    private:
      unsigned char addresses[10];

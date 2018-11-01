@@ -78,12 +78,16 @@ void Recipient::sumAddressBytes() {
    unsigned char *ptr = addresses;
    for (int i = 0; i < 10; i++)
    {
-          sumOfAddressBytes += *ptr;
-          ptr++;
+      sumOfAddressBytes += *ptr;
+      ptr++;
    }
 }
 
 void Recipient::send(Message message) {
+   this->send(message.statusByte/*,other data*/);
+}
+
+void Recipient::send(unsigned char status) {
    SERIAL_CHANNEL.write(START_DELIMETER);
    SERIAL_CHANNEL.write(0x00);              //byte 0 of length
    SERIAL_CHANNEL.write(LENGTH);            //byte 1 of length
@@ -93,7 +97,7 @@ void Recipient::send(Message message) {
    unsigned char *ptr = addresses;
    for (int i = 0; i < 10; i++)
    {
-      this->sendByte(*ptr);                     //address bytes
+      this->sendByte(*ptr);                 //address bytes
       ptr++;
    }
 
@@ -101,13 +105,11 @@ void Recipient::send(Message message) {
    SERIAL_CHANNEL.write(0x00);              //options
 
    unsigned char sumMessageBytes = 0x00;
-   ptr = (unsigned char *)&message;
-   for (int i = 0; i < 1; i++)
-   {
-      this->sendByte(*ptr);                     //message bytes
-      sumMessageBytes += *ptr;
-      ptr++;
-   }
+
+   this->sendByte(status);                  //message bytes
+   sumMessageBytes += status;
+
+   //other data bytes
 
    unsigned char sumBytes = FRAME_TYPE + FRAME_ID + sumOfAddressBytes + sumMessageBytes;
    this->sendByte(0xFF - sumBytes);  //checksum
