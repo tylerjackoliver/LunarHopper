@@ -54,10 +54,10 @@ const int VALVE_CLOSE = LOW;
 
 // ACS configuration
 unsigned long timeZG = 0;                      //Variable to record the start time of zeroing the gyros
+unsigned long timeAcs = 0;                     //Variable used to record the start time of each ACS() loop
 bool acsInCalibration = false;                 //Tracking variable to detect if ACS subsystem is active
 bool acsCalibrated = false;                    //Tracking variable to record if ACS system has been acsCalibrated
 bool midCycle = false;                         //Tracking variable to record if ACS system is mid Cycle
-unsigned long timeAcs = 0;                     //Variable used to record the start time of each ACS(); loop
 
 /*
  *  Main Engine
@@ -70,7 +70,7 @@ bool ignited = false; // Records if the engine has been ignited
 // oxPulse specific
 int blipMode = 0;                            // Records the current mode of the oxPulse function (0: Ready to fire another blip, 1: Just fired a blip, 2: Just rested after a blip)
 int oxPulseNo = 0;                           // Records the number of oxygen pulses completed (In Ignition)
-unsigned long timePulse = 0;                 // Records start time of the last ox blip
+unsigned long timePulse = 0;                 // Records the start time of the last ox blip
 
 
 /*
@@ -78,13 +78,13 @@ unsigned long timePulse = 0;                 // Records start time of the last o
  * Used to record the current state of the hopper
  */
 bool startStatus = false;                   // Records the state of the start pin to start the flight
-bool disarmStatus = false;                  // If the hopper is disarmed
-bool abortStatus = false;                   // If the hopper has aborted
+bool disarmStatus = false;                  // Stores if the hopper has been disarmed
+bool abortStatus = false;                   // Stores if the hopper has aborted
 double currentPressure = 0;                 // Current pressre of the pressure transducer
 
 // Initialisation of objects.
-Accelerometer accelerometer;
-Gyro gyro;
+Accelerometer accelerometer;                // The accelerometers
+Gyro gyro;                                  // The gyros
 /*
  * CODE
  */
@@ -174,35 +174,32 @@ void loop() {
   
 
 /*
- * UPDATED TO LATEST VERSION 23/3/15 by Achal Mittal
- * Verified through system tests/simulations.
- * Will enable the systems on the hopper when activated
+ * UPDATED TO LATEST VERSION 20/11/18 by Samuel Rowbotham
+ *  Not Verified through system tests/simulations.
+ *  Will slowly disarm the vehicle by having a gap between meco and ventAct
  */
-// Never used..............
 void disarm() {
   const int ACT_VENT_DELAY = 5000; // 5 seconds between engine cut off and venting of act 
   disarmStatus = true;
+  
   meco();
 
-  // !!! for the next four, need risk analysis/consideration here. 
-  // !!! Going based on my interpretation of what the (conflicting) status above was saying.
   delay(ACT_VENT_DELAY);
   ventAct();
 }
 
 /*
- * UPDATED TO LATEST VERSION 24/3/15 by Achal Mittal
- * Verified through system tests/simulations.
- * Will shut down the hopper systems if MECO is activated, but open the vent valve
- * Note: The MECO remote was never actually used. Neither in phase III nor in phase IV.
+ * UPDATED TO LATEST VERSION 20/11/2018 by Samuel Rowbotham
+ * Not Verified through system tests/simulations.
+ * Instantly shutsoff the engine and vents the ACT
    The codes were therefore tested using the simulation function in the Xojo App which simulates the MECO remote being on/off and the hopper being armed/disarmed.
  */
 
 void abort() { // Rename to abort for visual
   Serial.println("ABORTING");
   abortStatus = true;
-  meco();
   
+  meco();
   ventAct();
 }
 
@@ -211,8 +208,8 @@ void ventAct() {
   Serial.println("Venting ACT");
   digitalWrite(ACT_PIN_X_POS, VALVE_OPEN);
   digitalWrite(ACT_PIN_X_NEG, VALVE_OPEN);
-  digitalWrite(ACT_PIN_Y_POS, VALVE_OPEN); // vent A
-  digitalWrite(ACT_PIN_Y_NEG, VALVE_OPEN); // vent ACS system
+  digitalWrite(ACT_PIN_Y_POS, VALVE_OPEN);
+  digitalWrite(ACT_PIN_Y_NEG, VALVE_OPEN);
 }
 
 void meco() {
@@ -236,7 +233,7 @@ void meco() {
  */
 
 void acsCalibration() {
-  const unsigned long  CALIBRATION_TIME = 40000; //Time used to zero the gyro
+  const unsigned long  CALIBRATION_TIME = 40000; // Time used to zero the gyro
 
   if (acsInCalibration == false){
     acsCalibrated = false;
@@ -263,24 +260,18 @@ void acsCalibration() {
   }
 }
 
-void acsResetCalibration() {
-  acsCalibrated = false;
-  acsInCalibration = false;
-}
-
+// Calculates the angle of the hopper and activates the ACT in response. If the angle is greter then MAX_ANGLE it abort's.
 void acs() {
-  const int MAX_ANGLE = 15;                      // this angle will trigger abort
-  const unsigned long TIME_INTERVAL = 25;        //Time in milliseconds between each adjustment of the ACS system
-  const float GYRO_SENSITIVITY = 0.04;   //gyro xensitivity at 40mV/deg/
-  const float ACCEL_SENSITIVITY = 0.8;   //accelerometer sensitivity
-  const float CFF_VECTOR_GYRO = 0.90;    //complementary filter- choose what percentage of gyro angle you want in the final angle.
-  const float CFF_VECTOR_ACCEL = 0.10;   //complementary filter- choose what percentage of accelerometer angle you want in the final angle.
-  const float CONTROL_LAW_GAIN = 0.5;            // gain of control law
-  const float CONTROL_LAW_DEADBAND = 0.1;        // threshold for control law (deadband) #maybe this is a bit too low, might require some changes
+  const int MAX_ANGLE = 15; // this angle will trigger abort
+  const unsigned long TIME_INTERVAL = 25; //Time in milliseconds between each adjustment of the ACS system
+  const float CFF_VECTOR_GYRO = 0.90; //complementary filter- choose what percentage of gyro angle you want in the final angle.
+  const float CFF_VECTOR_ACCEL = 0.10; //complementary filter- choose what percentage of accelerometer angle you want in the final angle.
+  const float CONTROL_LAW_GAIN = 0.5; // gain of control law
+  const float CONTROL_LAW_DEADBAND = 0.1; // threshold for control law (deadband) #maybe this is a bit too low, might require some changes
 
 
   if (midCycle == false) { // If midCycle starting for first time or has just finished
-    midCycle = true;       // Record the midCycle is starting
+    midCycle = true; // Record the midCycle is starting
     timeAcs = millis(); // Record the start time of the midCycle
     gyro.setTimeAcs(timeAcs);
 
@@ -291,8 +282,8 @@ void acs() {
     accelerometer.calcAngles();
     gyro.calcAngles();
 
-    float currentAngleX = CFF_VECTOR_GYRO * gyro.getAngleX() + CFF_VECTOR_ACCEL * accelerometer.getAngleX(); //apply complementary filtering in z axis
-    float currentAngleY = CFF_VECTOR_GYRO * gyro.getAngleY() + CFF_VECTOR_ACCEL * accelerometer.getAngleY(); //apply complementary filtering in y axis
+    float currentAngleX = CFF_VECTOR_GYRO * gyro.getAngleX() + CFF_VECTOR_ACCEL * accelerometer.getAngleX(); // Apply complementary filtering in z axis
+    float currentAngleY = CFF_VECTOR_GYRO * gyro.getAngleY() + CFF_VECTOR_ACCEL * accelerometer.getAngleY(); // Apply complementary filtering in y axis
 
     float nextAngleX = currentAngleX + CONTROL_LAW_GAIN * gyro.getRateX();
     float nextAngleY = currentAngleY + CONTROL_LAW_GAIN * gyro.getRateY();
@@ -301,23 +292,20 @@ void acs() {
     Serial.println(abs(nextAngleX));
     if (abs(nextAngleX) < MAX_ANGLE) {
       if (abs(nextAngleX) >= CONTROL_LAW_DEADBAND) {
-        if (nextAngleX > 0) {    //control law
+        if (nextAngleX > 0) {  //control law
           digitalWrite(ACT_PIN_X_POS, VALVE_OPEN);
           digitalWrite(ACT_PIN_X_NEG, VALVE_CLOSE);
 
         } else if (nextAngleX < 0) {
-          //Serial.println(currentangle+a*gyroRate);
           digitalWrite(ACT_PIN_X_POS, VALVE_CLOSE);
           digitalWrite(ACT_PIN_X_NEG, VALVE_OPEN);
 
-        } else { // !!Seems like an impossible event
-          digitalWrite(ACT_PIN_X_POS, VALVE_CLOSE);
-          digitalWrite(ACT_PIN_X_NEG, VALVE_CLOSE);
-          
         }
-      }
-      delay(10); //midCycles was 15 before, but now is 10. if 15ms, we want 50 Hz which is 20ms. Thus, 10 gives more room to maneouvre. !! SEEMS UNESSASARY
-      
+      } else {
+        digitalWrite(ACT_PIN_X_POS, VALVE_CLOSE);
+        digitalWrite(ACT_PIN_X_NEG, VALVE_CLOSE);
+
+      }      
     } else {
       abort();
     }
@@ -326,7 +314,7 @@ void acs() {
     Serial.println(abs(nextAngleY));
     if (abs(nextAngleY) < MAX_ANGLE) {
       if (abs(nextAngleY) >= CONTROL_LAW_DEADBAND) {
-        if (nextAngleY > 0) {    //control law
+        if (nextAngleY > 0) {    // control law
           digitalWrite(ACT_PIN_Y_POS, VALVE_OPEN);
           digitalWrite(ACT_PIN_Y_NEG, VALVE_CLOSE);
 
@@ -334,9 +322,11 @@ void acs() {
          digitalWrite(ACT_PIN_Y_POS, VALVE_CLOSE);
          digitalWrite(ACT_PIN_Y_NEG, VALVE_OPEN);
 
-        } else { // !!Seems like an impossible event
+        
+        } else {
           digitalWrite(ACT_PIN_Y_POS, VALVE_CLOSE);
           digitalWrite(ACT_PIN_Y_NEG, VALVE_CLOSE);
+
         }
       }
     } else {
@@ -375,6 +365,7 @@ void oxPulse() {
   }
 }
 
+// Pressurises the solonoid prior to oxPulse (ignition)
 void pressurisation() {
   currentPressure = getPressure();
 
@@ -391,6 +382,7 @@ void pressurisation() {
   }
 }
 
+// Throttle control of the vehicle (controled manually)
 void throttle() {
   currentPressure = getPressure();
 
@@ -400,21 +392,22 @@ void throttle() {
   Serial.print("Current pressure = ");
   Serial.println(currentPressure);
 
-
   if (currentPressure < IGNITION_PRESSURE ) {
     digitalWrite(SOL_PIN_PRES, VALVE_OPEN);
     digitalWrite(SOL_PIN_OX, VALVE_CLOSE);
     Serial.println("current < ig");
+
   } else if (throttlePressure >= currentPressure && currentPressure > IGNITION_PRESSURE) {
     digitalWrite(SOL_PIN_PRES, VALVE_OPEN);
     digitalWrite(SOL_PIN_OX, VALVE_OPEN);
     Serial.println("throttle >= current && current > ig");
+
   } else if (throttlePressure < IGNITION_PRESSURE && IGNITION_PRESSURE < currentPressure) {
     digitalWrite(SOL_PIN_PRES, VALVE_CLOSE);
     digitalWrite(SOL_PIN_OX, VALVE_CLOSE);
     Serial.println("throttle < ig < current");
 
-    } else if (throttlePressure < currentPressure && IGNITION_PRESSURE < currentPressure && IGNITION_PRESSURE < throttlePressure) {
+  } else if (throttlePressure < currentPressure && IGNITION_PRESSURE < currentPressure && IGNITION_PRESSURE < throttlePressure) {
     digitalWrite(SOL_PIN_PRES, VALVE_CLOSE);
     digitalWrite(SOL_PIN_OX, VALVE_OPEN);
     Serial.println("ig < throttle < current");
@@ -422,12 +415,13 @@ void throttle() {
   }
 }
 
+// Returns the pressure in bars of the Pressure Transducer
 double getPressure() {
   int voltage = analogRead(PRES_TRANS_PIN);
   return voltage * (40 / 1023); //int * (bar/int) returns: bar
 }
 
-// Not used currently
+// Not used currently Resets all values
 void reset() {
   timeZG = 0;
   acsInCalibration = false;
@@ -437,8 +431,9 @@ void reset() {
   blipMode = 0;
   oxPulseNo = 0;
   timePulse = 0;
-  abortStatus = false;
-  pressurised = false;
   currentPressure = 0;
+  pressurised = false;
   startStatus = false;
+  disarmStatus = false;
+  abortStatus = false;
 }
