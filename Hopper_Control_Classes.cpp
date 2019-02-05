@@ -18,12 +18,12 @@ class Accelerometer {
       float x_g = ((analogRead(PIN_X) * VCC / 1023.00) - zeroVoltX) / ACCEL_SENSITIVITY;
       float y_g = ((analogRead(PIN_Y) * VCC / 1023.00) - zeroVoltY) / ACCEL_SENSITIVITY;
       float z_g = ((analogRead(PIN_Z) * VCC / 1023.00) - zeroVoltZ) / ACCEL_SENSITIVITY;
-      float c_g = sqrt(sq(y_g) + sq(z_g));  //calculate the gravity using y and z axis
-      float d_g = sqrt(sq(x_g) + sq(z_g));  // same as above using x and y axis
+      float c_g = sqrt(sq(y_g) + sq(z_g));  // Calculate the gravity using y and z axis
+      float d_g = sqrt(sq(x_g) + sq(z_g));  // Same as above using x and y axis
       float accAngleInRadiansX = -atan2 (x_g, c_g);
       float accAngleInRadiansY = -atan2 (y_g, d_g);
-      angleX = accAngleInRadiansX * 180 / M_PI;  //get x-angle from accelerometer in degrees
-      angleY = accAngleInRadiansY * 180 / M_PI;  //get y-angle from accelerometer in degrees
+      angleX = accAngleInRadiansX * 180 / M_PI;  // Get x-angle from accelerometer in degrees
+      angleY = accAngleInRadiansY * 180 / M_PI;  // Get y-angle from accelerometer in degrees
     }
 
 
@@ -108,8 +108,13 @@ class Gyro {
         sumY += analogRead(PIN_Y);
       }
 
+      //
+      // Below formula is based on the orientaiton that the gyro is mounted. Need to be careful when mounting
       rateX = ( (sumX * VCC) / (samplingCount * 1023.) - zeroVoltX) / GYRO_SENSITIVITY * (1.0); // Calculate if any movement has occured in the X axis and correct angle (change sign due to how the gyro is mounted on the frame)
       rateY = ( (sumY * VCC) / (samplingCount * 1023.) - zeroVoltY) / GYRO_SENSITIVITY * (1.0); // Same for y axis
+      //
+      //
+
       angleX = rateX * (millis() - timeAcs + 15.00) * 0.001;  // Get x angle from x-axis gyro
       angleY = rateY * (millis() - timeAcs + 15.00) * 0.001;  // Get y angle from y-axis gyro
     }

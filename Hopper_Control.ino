@@ -21,27 +21,27 @@ Updated by: Samuel Rowbotham      sjr1g18
 /* PIN NUMBERS
  * Set pins for various input and output devices on arduino. e.g.- gyro, accelerometer,pressure transducer and solenoid valves.
  */
-//Sensors (INPUTS)
-const int PRES_TRANS_PIN = A4;  //Input from Pressure Transducer [ANALOG]
-const int GYRO_PIN_X = A0;      //x-axis Gyro is connected to analog pin
-const int GYRO_PIN_Y = A5;      //y-axis gyro
-const int ACCEL_PIN_X = A1;     //x-axis accelerometer pin
-const int ACCEL_PIN_Y = A2;     //y-axis accelerometer pin
-const int ACCEL_PIN_Z = A3;     //z-axis accelerometer pin
+// Sensors (INPUTS)
+const int PRES_TRANS_PIN = A4;  // Input from Pressure Transducer [ANALOG]
+const int GYRO_PIN_X = A0;      // x-axis Gyro is connected to analog pin
+const int GYRO_PIN_Y = A5;      // y-axis gyro
+const int ACCEL_PIN_X = A1;     // x-axis accelerometer pin
+const int ACCEL_PIN_Y = A2;     // y-axis accelerometer pin
+const int ACCEL_PIN_Z = A3;     // z-axis accelerometer pin
 
 // Actuators (OUTPUTS)
-const int ACT_PIN_X_POS = 6;    //ACS valve positive x_axis
-const int ACT_PIN_X_NEG = 5;    //ACS valve negative x_axis
-const int ACT_PIN_Y_POS = 4;    //ACS valve positive y_axis
-const int ACT_PIN_Y_NEG = 3;    //ACS valve negative y_axis
-const int SOL_PIN_VENT = 12;    //Output to VENT solenoid control (SV2)
-const int SOL_PIN_PRES = 10;    //Output to PRESSURE solenoid control (SV1)
-const int SOL_PIN_OX = 11;      //Output to OX solenoid control(SV3)
+const int ACT_PIN_X_POS = 6;    // ACS valve positive x_axis
+const int ACT_PIN_X_NEG = 5;    // ACS valve negative x_axis
+const int ACT_PIN_Y_POS = 4;    // ACS valve positive y_axis
+const int ACT_PIN_Y_NEG = 3;    // ACS valve negative y_axis
+const int SOL_PIN_VENT = 12;    // Output to VENT solenoid control (SV2)
+const int SOL_PIN_PRES = 10;    // Output to PRESSURE solenoid control (SV1)
+const int SOL_PIN_OX = 11;      // Output to OX solenoid control(SV3)
 
 // Control pins (INPUTS)
 const int START_PIN = 30;
 const int ABORT_PIN = 2;
-const int DISARM_PIN = 1; // ADD
+const int DISARM_PIN = 1; // New pin to be added possibly
 const int THROTTLE_PIN = A6;
 
 // Valve constants for readability
@@ -53,11 +53,11 @@ const int VALVE_CLOSE = LOW;
  */
 
 // ACS configuration
-unsigned long timeZG = 0;                      //Variable to record the start time of zeroing the gyros
-unsigned long timeAcs = 0;                     //Variable used to record the start time of each ACS() loop
-bool acsInCalibration = false;                 //Tracking variable to detect if ACS subsystem is active
-bool acsCalibrated = false;                    //Tracking variable to record if ACS system has been acsCalibrated
-bool midCycle = false;                         //Tracking variable to record if ACS system is mid Cycle
+unsigned long timeZG = 0;                      // Variable to record the start time of zeroing the gyros
+unsigned long timeAcs = 0;                     // Variable used to record the start time of each ACS() loop
+bool acsInCalibration = false;                 // Tracking variable to detect if ACS subsystem is active
+bool acsCalibrated = false;                    // Tracking variable to record if ACS system has been acsCalibrated
+bool midCycle = false;                         // Tracking variable to record if ACS system is mid Cycle
 
 /*
  *  Main Engine
@@ -262,13 +262,10 @@ void acsCalibration() {
 
 // Calculates the angle of the hopper and activates the ACT in response. If the angle is greter then MAX_ANGLE it abort's.
 void acs() {
-  const int MAX_ANGLE = 15; // this angle will trigger abort
-  const unsigned long TIME_INTERVAL = 25; //Time in milliseconds between each adjustment of the ACS system
-  const float CFF_VECTOR_GYRO = 0.90; //complementary filter- choose what percentage of gyro angle you want in the final angle.
-  const float CFF_VECTOR_ACCEL = 0.10; //complementary filter- choose what percentage of accelerometer angle you want in the final angle.
-  const float CONTROL_LAW_GAIN = 0.5; // gain of control law
-  const float CONTROL_LAW_DEADBAND = 0.1; // threshold for control law (deadband) #maybe this is a bit too low, might require some changes
-
+  const unsigned long TIME_INTERVAL = 25; // Time in milliseconds between each adjustment of the ACS system
+  const float CFF_VECTOR_GYRO = 0.90; // Complementary filter- choose what percentage of gyro angle you want in the final angle.
+  const float CFF_VECTOR_ACCEL = 0.10; // Complementary filter- choose what percentage of accelerometer angle you want in the final angle.
+  const float CONTROL_LAW_GAIN = 0.5; // Gain of control law
 
   if (midCycle == false) { // If midCycle starting for first time or has just finished
     midCycle = true; // Record the midCycle is starting
@@ -288,53 +285,40 @@ void acs() {
     float nextAngleX = currentAngleX + CONTROL_LAW_GAIN * gyro.getRateX();
     float nextAngleY = currentAngleY + CONTROL_LAW_GAIN * gyro.getRateY();
 
-    Serial.print("NextAngleX = ");
-    Serial.println(abs(nextAngleX));
-    if (abs(nextAngleX) < MAX_ANGLE) {
-      if (abs(nextAngleX) >= CONTROL_LAW_DEADBAND) {
-        if (nextAngleX > 0) {  //control law
-          digitalWrite(ACT_PIN_X_POS, VALVE_OPEN);
-          digitalWrite(ACT_PIN_X_NEG, VALVE_CLOSE);
-
-        } else if (nextAngleX < 0) {
-          digitalWrite(ACT_PIN_X_POS, VALVE_CLOSE);
-          digitalWrite(ACT_PIN_X_NEG, VALVE_OPEN);
-
-        }
-      } else {
-        digitalWrite(ACT_PIN_X_POS, VALVE_CLOSE);
-        digitalWrite(ACT_PIN_X_NEG, VALVE_CLOSE);
-
-      }      
-    } else {
-      abort();
-    }
-
-    Serial.print("NextAngleY = ");
-    Serial.println(abs(nextAngleY));
-    if (abs(nextAngleY) < MAX_ANGLE) {
-      if (abs(nextAngleY) >= CONTROL_LAW_DEADBAND) {
-        if (nextAngleY > 0) {    // control law
-          digitalWrite(ACT_PIN_Y_POS, VALVE_OPEN);
-          digitalWrite(ACT_PIN_Y_NEG, VALVE_CLOSE);
-
-        } else if (nextAngleY < 0) {
-         digitalWrite(ACT_PIN_Y_POS, VALVE_CLOSE);
-         digitalWrite(ACT_PIN_Y_NEG, VALVE_OPEN);
-
-        
-        } else {
-          digitalWrite(ACT_PIN_Y_POS, VALVE_CLOSE);
-          digitalWrite(ACT_PIN_Y_NEG, VALVE_CLOSE);
-
-        }
-      }
-    } else {
-      abort();
-    }
+    acsThrustControl(ACT_PIN_X_POS, ACT_PIN_X_NEG, nextAngleX, "X");
+    acsThrustControl(ACT_PIN_Y_POS, ACT_PIN_Y_NEG, nextAngleY, "Y");
+    
   }
+  // delay(10);
 }
 
+void acsThrustControl(int PIN_POS, int PIN_NEG, float nextAngle, char dir) {
+  const int MAX_ANGLE = 15; // This angle will trigger abort
+  const float CONTROL_LAW_DEADBAND = 0.1; // Threshold for control law (deadband) #maybe this is a bit too low, might require some changes
+
+  Serial.print("nextAngle");
+  Serial.print(dir);
+  Serial.print(" = ");
+  Serial.println(nextAngle);
+  if (abs(nextAngle) < MAX_ANGLE) {
+    if (abs(nextAngle) >= CONTROL_LAW_DEADBAND) {
+      if (nextAngle > 0) {    // Control law
+        digitalWrite(PIN_POS, VALVE_OPEN);
+        digitalWrite(PIN_NEG, VALVE_CLOSE);
+
+      } else if (nextAngle < 0) {
+        digitalWrite(PIN_POS, VALVE_CLOSE);
+        digitalWrite(PIN_NEG, VALVE_OPEN);
+      
+      }
+    } else {
+      digitalWrite(PIN_POS, VALVE_CLOSE);
+      digitalWrite(PIN_NEG, VALVE_CLOSE);
+    }
+  } else {
+    abort();
+  }
+}
 
 // Blips the OX to warm up the catalyst bed (Effective igniton)
 void oxPulse() {
@@ -360,7 +344,7 @@ void oxPulse() {
       oxPulseNo++;
     }
   }
-  if (oxPulseNo < OX_NO_PULSES) {
+  if (oxPulseNo >= OX_NO_PULSES) {
     ignited = true;
   }
 }
@@ -421,7 +405,7 @@ double getPressure() {
   return voltage * (40 / 1023); //int * (bar/int) returns: bar
 }
 
-// Not used currently Resets all values
+// Not used currently resets all values
 void reset() {
   timeZG = 0;
   acsInCalibration = false;
