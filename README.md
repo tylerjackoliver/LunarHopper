@@ -8,7 +8,7 @@ Tester file format:
 *time (seconds) | command | arguments*
 
 Tester file example:
-'''
+```
 0 start high
 0.01 gyro 1 2
 0.05 accel 1 2 3
@@ -17,10 +17,10 @@ Tester file example:
 1 abort high
 5 disarm high
 10 end
-'''
+```
 
 Test file example output:
-'''
+```
 -0.08030: ACT_PIN_X_POS reads 0
 -0.08025: ACT_PIN_X_NEG reads 0
 -0.08022: ACT_PIN_Y_POS reads 0
@@ -37,4 +37,4 @@ Test file example output:
 5.057830: 5 disarm high
 10.06733: 10 end
 10.10730: Test has concluded
-'''
+```
