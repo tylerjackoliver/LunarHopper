@@ -44,13 +44,13 @@ trigger0
 $Comp
 L Connector_Generic:Conn_01x02 J4
 U 1 1 5DD98EA2
-P 3250 1250
-F 0 "J4" H 3168 1467 50  0000 C CNN
-F 1 "Conn_01x02" H 3168 1376 50  0000 C CNN
-F 2 "TerminalBlock:TerminalBlock_Altech_AK300-2_P5.00mm" H 3250 1250 50  0001 C CNN
-F 3 "~" H 3250 1250 50  0001 C CNN
-	1    3250 1250
-	1    0    0    -1  
+P 3250 1350
+F 0 "J4" H 3168 1567 50  0000 C CNN
+F 1 "Conn_01x02" H 3168 1476 50  0000 C CNN
+F 2 "TerminalBlock:TerminalBlock_Altech_AK300-2_P5.00mm" H 3250 1350 50  0001 C CNN
+F 3 "~" H 3250 1350 50  0001 C CNN
+	1    3250 1350
+	1    0    0    1   
 $EndComp
 $Comp
 L power:+12V #PWR0102
