@@ -358,12 +358,12 @@ $Comp
 L Device:R R5
 U 1 1 5DDB8757
 P 2050 6900
-F 0 "R5" H 2120 6946 50  0000 L CNN
-F 1 "10K" H 2120 6855 50  0000 L CNN
+F 0 "R5" H 1980 6854 50  0000 R CNN
+F 1 "10K" H 1980 6945 50  0000 R CNN
 F 2 "Resistor_SMD:R_1206_3216Metric_Pad1.42x1.75mm_HandSolder" V 1980 6900 50  0001 C CNN
 F 3 "~" H 2050 6900 50  0001 C CNN
 	1    2050 6900
-	1    0    0    -1  
+	-1   0    0    1   
 $EndComp
 Connection ~ 2050 6750
 Wire Wire Line
@@ -426,12 +426,12 @@ $Comp
 L Device:R R6
 U 1 1 5DDBF7BC
 P 5550 1550
-F 0 "R6" H 5620 1596 50  0000 L CNN
-F 1 "10K" H 5620 1505 50  0000 L CNN
+F 0 "R6" H 5480 1504 50  0000 R CNN
+F 1 "10K" H 5480 1595 50  0000 R CNN
 F 2 "Resistor_SMD:R_1206_3216Metric_Pad1.42x1.75mm_HandSolder" V 5480 1550 50  0001 C CNN
 F 3 "~" H 5550 1550 50  0001 C CNN
 	1    5550 1550
-	1    0    0    -1  
+	-1   0    0    1   
 $EndComp
 Connection ~ 5550 1400
 Wire Wire Line
@@ -492,12 +492,12 @@ $Comp
 L Device:R R7
 U 1 1 5DDC151F
 P 5550 2500
-F 0 "R7" H 5620 2546 50  0000 L CNN
-F 1 "10K" H 5620 2455 50  0000 L CNN
+F 0 "R7" H 5480 2454 50  0000 R CNN
+F 1 "10K" H 5480 2545 50  0000 R CNN
 F 2 "Resistor_SMD:R_1206_3216Metric_Pad1.42x1.75mm_HandSolder" V 5480 2500 50  0001 C CNN
 F 3 "~" H 5550 2500 50  0001 C CNN
 	1    5550 2500
-	1    0    0    -1  
+	-1   0    0    1   
 $EndComp
 Wire Wire Line
 	5550 2350 5800 2350
