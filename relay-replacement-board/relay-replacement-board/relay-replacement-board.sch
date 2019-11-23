@@ -1,0 +1,99 @@
+EESchema Schematic File Version 4
+EELAYER 30 0
+EELAYER END
+$Descr A4 11693 8268
+encoding utf-8
+Sheet 1 1
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L Connector_Generic:Conn_01x02 J?
+U 1 1 5DD96B8C
+P 1300 1550
+F 0 "J?" H 1218 1767 50  0000 C CNN
+F 1 "Conn_01x02" H 1218 1676 50  0000 C CNN
+F 2 "" H 1300 1550 50  0001 C CNN
+F 3 "~" H 1300 1550 50  0001 C CNN
+	1    1300 1550
+	-1   0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR?
+U 1 1 5DD973BD
+P 1650 1750
+F 0 "#PWR?" H 1650 1500 50  0001 C CNN
+F 1 "GND" H 1655 1577 50  0000 C CNN
+F 2 "" H 1650 1750 50  0001 C CNN
+F 3 "" H 1650 1750 50  0001 C CNN
+	1    1650 1750
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	1650 1750 1650 1650
+Wire Wire Line
+	1650 1650 1500 1650
+Text Label 2150 1550 2    50   ~ 0
+trigger0
+$Comp
+L Connector_Generic:Conn_01x02 J?
+U 1 1 5DD98EA2
+P 3250 1250
+F 0 "J?" H 3168 1467 50  0000 C CNN
+F 1 "Conn_01x02" H 3168 1376 50  0000 C CNN
+F 2 "" H 3250 1250 50  0001 C CNN
+F 3 "~" H 3250 1250 50  0001 C CNN
+	1    3250 1250
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:Q_NMOS_GDSD Q?
+U 1 1 5DD998A5
+P 2500 1550
+F 0 "Q?" H 2788 1596 50  0000 L CNN
+F 1 "Q_NMOS_GDSD" H 2788 1505 50  0000 L CNN
+F 2 "" H 2700 1650 50  0001 C CNN
+F 3 "~" H 2500 1550 50  0001 C CNN
+	1    2500 1550
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+12V #PWR?
+U 1 1 5DD9CA48
+P 2900 1100
+F 0 "#PWR?" H 2900 950 50  0001 C CNN
+F 1 "+12V" H 2915 1273 50  0000 C CNN
+F 2 "" H 2900 1100 50  0001 C CNN
+F 3 "" H 2900 1100 50  0001 C CNN
+	1    2900 1100
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3050 1250 2900 1250
+NoConn ~ 2600 1350
+$Comp
+L power:GND #PWR?
+U 1 1 5DD9EDA6
+P 2600 1850
+F 0 "#PWR?" H 2600 1600 50  0001 C CNN
+F 1 "GND" H 2605 1677 50  0000 C CNN
+F 2 "" H 2600 1850 50  0001 C CNN
+F 3 "" H 2600 1850 50  0001 C CNN
+	1    2600 1850
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2600 1850 2600 1750
+Wire Wire Line
+	1500 1550 2300 1550
+Wire Wire Line
+	2900 1250 2900 1100
+Wire Wire Line
+	3050 1350 2700 1350
+$EndSCHEMATC
