@@ -55,5 +55,5 @@ dkms.conf
 .vscode/
 
 #kicad settings and backup files
-.kicad_pcb-back
-.sch-bak
+*.kicad_pcb-back
+*.sch-bak
