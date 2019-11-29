@@ -57,3 +57,5 @@ dkms.conf
 #kicad settings and backup files
 *.kicad_pcb-back
 *.sch-bak
+relay-replacement-board/relay-replacement-board/fp-info-cache
+*.kicad_pcb-bak
